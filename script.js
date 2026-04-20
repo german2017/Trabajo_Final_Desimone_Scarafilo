@@ -433,12 +433,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const params = new URLSearchParams();
             params.set('id', propertyId || '1');
             params.set('title', 'Apartamento moderno en Polanco');
+            params.set('location', 'Polanco, Ciudad de México');
             params.set('checkin', checkinVal);
             params.set('checkout', checkoutVal);
             params.set('guests', guestsVal);
             params.set('nights', currentNights);
             params.set('price', nightlyPrice);
             params.set('total', currentTotal);
+            params.set('host', 'María González');
             
             return 'booking.html?' + params.toString();
         }
@@ -525,29 +527,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Update pricing in the price box
-    const priceBoxNights = document.querySelector('.price-box-row:nth-child(1)');
-    const priceBoxCleaning = document.querySelector('.price-box-row:nth-child(2)');
-    const priceBoxService = document.querySelector('.price-box-row:nth-child(3)');
-    const priceBoxDeposit = document.querySelector('.price-box-row:nth-child(4)');
-    const priceBoxTotal = document.querySelector('.price-box-total');
+    const priceDetails = document.querySelector('.price-details');
+    const priceTotal = document.querySelector('.price-total');
     
     const numNights = parseInt(nights) || 5;
     const subtotal = nightlyPrice * numNights;
     
-    if (priceBoxNights) {
-        priceBoxNights.innerHTML = `<span>${formatPrice(nightlyPrice)} x ${numNights} noches</span><span>${formatPrice(subtotal)}</span>`;
+    if (priceDetails) {
+        const priceRows = priceDetails.querySelectorAll('.price-row');
+        if (priceRows[0]) {
+            priceRows[0].innerHTML = `<span class="price-label">${formatPrice(nightlyPrice)} x ${numNights} noches</span><span class="price-value">${formatPrice(subtotal)}</span>`;
+        }
+        if (priceRows[1]) {
+            priceRows[1].innerHTML = `<span class="price-label">Tarifa de limpieza</span><span class="price-value">${formatPrice(cleaningFee)}</span>`;
+        }
+        if (priceRows[2]) {
+            priceRows[2].innerHTML = `<span class="price-label">Tarifa de servicio</span><span class="price-value">${formatPrice(serviceFee)}</span>`;
+        }
     }
-    if (priceBoxCleaning) {
-        priceBoxCleaning.innerHTML = `<span>Tarifa de limpieza</span><span>${formatPrice(cleaningFee)}</span>`;
-    }
-    if (priceBoxService) {
-        priceBoxService.innerHTML = `<span>Tarifa de servicio</span><span>${formatPrice(serviceFee)}</span>`;
-    }
-    if (priceBoxDeposit) {
-        priceBoxDeposit.innerHTML = `<span>Depósito reembolsable</span><span>${formatPrice(deposit)}</span>`;
-    }
-    if (priceBoxTotal) {
-        priceBoxTotal.innerHTML = `<span>Total</span><span>${formatPrice(total)}</span>`;
+    if (priceTotal) {
+        const totalAmount = priceTotal.querySelector('.total-amount');
+        if (totalAmount) {
+            totalAmount.textContent = formatPrice(total);
+        }
     }
     
     console.log('Alquileres - Booking page initialized:', {
@@ -559,5 +561,241 @@ document.addEventListener('DOMContentLoaded', function() {
         nights: nights || 'default',
         nightlyPrice: nightlyPrice,
         total: total
+    });
+    
+    // Handle confirm and pay button
+    const confirmPayBtn = document.getElementById('confirm-pay-btn');
+    
+    if (confirmPayBtn) {
+        confirmPayBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Get form fields
+            const firstName = document.getElementById('firstName');
+            const lastName = document.getElementById('lastName');
+            const email = document.getElementById('email');
+            const cardName = document.getElementById('cardName');
+            const cardNumber = document.getElementById('cardNumber');
+            
+            // Validation
+            let errors = [];
+            
+            // Validate name (first + last)
+            if (!firstName || !firstName.value.trim()) {
+                errors.push('Nombre');
+            }
+            if (!lastName || !lastName.value.trim()) {
+                errors.push('Apellido');
+            }
+            
+            // Validate email
+            if (!email || !email.value.trim()) {
+                errors.push('Correo electrónico');
+            } else if (!email.value.includes('@') || !email.value.includes('.')) {
+                alert('Por favor, ingresa un correo electrónico válido.');
+                email.focus();
+                return;
+            }
+            
+            // Validate card name
+            if (!cardName || !cardName.value.trim()) {
+                errors.push('Nombre en la tarjeta');
+            }
+            
+            // Validate card number (basic check - at least 13 digits)
+            if (!cardNumber || !cardNumber.value.trim()) {
+                errors.push('Número de tarjeta');
+            } else {
+                // Remove spaces and check if it's numeric
+                const cardDigits = cardNumber.value.replace(/\s/g, '');
+                if (cardDigits.length < 13 || !/^\d+$/.test(cardDigits)) {
+                    alert('Por favor, ingresa un número de tarjeta válido (13-19 dígitos).');
+                    cardNumber.focus();
+                    return;
+                }
+            }
+            
+            // Show error if any required fields are empty
+            if (errors.length > 0) {
+                alert('Por favor, completa los siguientes campos requeridos: ' + errors.join(', '));
+                return;
+            }
+            
+            // Generate mock reservation code
+            const year = new Date().getFullYear();
+            const randomNum = Math.floor(Math.random() * 90000) + 10000;
+            const reservationCode = `ALQ-${year}-${randomNum}`;
+            
+            // Get property details from the page
+            const propertyTitleEl = document.querySelector('.summary-details h3');
+            const propertyTitle = propertyTitleEl ? propertyTitleEl.textContent : 'Apartamento moderno en Polanco';
+            
+            const locationEl = document.querySelector('.summary-location');
+            const location = locationEl ? locationEl.textContent : 'Polanco, Ciudad de México';
+            
+            // Get dates from the page
+            const dateValues = document.querySelectorAll('.date-block .date-value');
+            const checkinDate = dateValues[0] ? dateValues[0].textContent : '';
+            const checkoutDate = dateValues[1] ? dateValues[1].textContent : '';
+            
+            // Get guests
+            const guestsEl = document.querySelector('.trip-guests .date-value');
+            const guests = guestsEl ? guestsEl.textContent : '2 huéspedes';
+            
+            // Get total
+            const totalEl = document.querySelector('.price-total .total-amount');
+            const total = totalEl ? totalEl.textContent.replace(/[$,]/g, '') : '14375';
+            
+            // Get host name
+            const hostEl = document.querySelector('.host-summary h4');
+            const hostName = hostEl ? hostEl.textContent.replace('Anfitrión: ', '') : 'María González';
+            
+            // Build query parameters for booking-success.html
+            const params = new URLSearchParams();
+            params.set('id', propertyId || '1');
+            params.set('title', encodeURIComponent(propertyTitle));
+            params.set('location', encodeURIComponent(location));
+            params.set('checkin', checkin || '2026-04-20');
+            params.set('checkout', checkout || '2026-04-25');
+            params.set('guests', guests || '2');
+            params.set('nights', nights || '5');
+            params.set('total', total);
+            params.set('host', encodeURIComponent(hostName));
+            params.set('code', reservationCode);
+            
+            // Redirect to booking-success.html
+            window.location.href = 'booking-success.html?' + params.toString();
+        });
+    }
+});
+
+/**
+ * Booking Success Page - Handle query parameters and display reservation confirmation
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if we're on the booking success page
+    const successTitle = document.querySelector('.success-title');
+    if (!successTitle) return; // Not on booking success page
+    
+    // Read query parameters from URL
+    const params = new URLSearchParams(window.location.search);
+    const propertyId = params.get('id');
+    const propertyTitle = params.get('title');
+    const location = params.get('location');
+    const checkin = params.get('checkin');
+    const checkout = params.get('checkout');
+    const guests = params.get('guests');
+    const nights = params.get('nights');
+    const total = params.get('total');
+    const hostName = params.get('host');
+    const reservationCode = params.get('code');
+    
+    // Helper function to format date
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        const date = new Date(dateStr + 'T00:00:00');
+        const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        return `${date.getDate()} de ${months[date.getMonth()]} de ${date.getFullYear()}`;
+    }
+    
+    // Helper function to format price
+    function formatPrice(num) {
+        return '$' + (num || 0).toLocaleString('es-MX');
+    }
+    
+    // Update confirmation code
+    const codeValue = document.querySelector('.code-value');
+    if (codeValue && reservationCode) {
+        codeValue.textContent = reservationCode;
+    }
+    
+    // Update property title
+    const propertyTitleEl = document.querySelector('.summary-property-info h3');
+    if (propertyTitleEl && propertyTitle) {
+        propertyTitleEl.textContent = decodeURIComponent(propertyTitle);
+    }
+    
+    // Update location
+    const locationEl = document.querySelector('.summary-property-info .summary-location');
+    if (locationEl && location) {
+        // Keep the SVG icon, update the text
+        const svgIcon = locationEl.querySelector('svg');
+        if (svgIcon) {
+            locationEl.innerHTML = '';
+            locationEl.appendChild(svgIcon);
+            locationEl.appendChild(document.createTextNode(' ' + decodeURIComponent(location)));
+        }
+    }
+    
+    // Update check-in date
+    const dateItems = document.querySelectorAll('.date-item');
+    if (dateItems.length >= 2) {
+        const checkinDateEl = dateItems[0].querySelector('.date-value');
+        if (checkinDateEl && checkin) {
+            checkinDateEl.textContent = formatDate(checkin);
+        }
+        
+        const checkoutDateEl = dateItems[1].querySelector('.date-value');
+        if (checkoutDateEl && checkout) {
+            checkoutDateEl.textContent = formatDate(checkout);
+        }
+    }
+    
+    // Update guests
+    const guestsEl = document.querySelector('.summary-guests span');
+    if (guestsEl && guests) {
+        guestsEl.textContent = `${guests} huésped${parseInt(guests) > 1 ? 'es' : ''}`;
+    }
+    
+    // Update pricing
+    const priceSummary = document.querySelector('.summary-price');
+    if (priceSummary) {
+        const nightlyPrice = 1850;
+        const numNights = parseInt(nights) || 5;
+        const subtotal = nightlyPrice * numNights;
+        const cleaningFee = 500;
+        const serviceFee = Math.round(subtotal * 0.10);
+        const taxes = 1700;
+        
+        const priceRows = priceSummary.querySelectorAll('.price-row');
+        if (priceRows[0]) {
+            priceRows[0].innerHTML = `<span>${formatPrice(nightlyPrice)} x ${numNights} noches</span><span>${formatPrice(subtotal)}</span>`;
+        }
+        if (priceRows[1]) {
+            priceRows[1].innerHTML = `<span>Tarifa de limpieza</span><span>${formatPrice(cleaningFee)}</span>`;
+        }
+        if (priceRows[2]) {
+            priceRows[2].innerHTML = `<span>Tarifa de servicio</span><span>${formatPrice(serviceFee)}</span>`;
+        }
+        if (priceRows[3]) {
+            priceRows[3].innerHTML = `<span>Impuestos (16%)</span><span>${formatPrice(taxes)}</span>`;
+        }
+        
+        const totalRow = priceSummary.querySelector('.price-total');
+        if (totalRow) {
+            const totalAmount = totalRow.querySelector('.total-amount');
+            if (totalAmount) {
+                totalAmount.textContent = formatPrice(parseInt(total) || 14375);
+            }
+        }
+    }
+    
+    // Update host name
+    const hostNameEl = document.querySelector('.host-details h3');
+    if (hostNameEl && hostName) {
+        hostNameEl.textContent = decodeURIComponent(hostName);
+    }
+    
+    console.log('Alquileres - Booking success page initialized:', {
+        propertyId: propertyId || 'default',
+        propertyTitle: propertyTitle || 'default',
+        location: location || 'default',
+        checkin: checkin || 'default',
+        checkout: checkout || 'default',
+        guests: guests || 'default',
+        nights: nights || 'default',
+        total: total || 'default',
+        hostName: hostName || 'default',
+        reservationCode: reservationCode || 'default'
     });
 });
