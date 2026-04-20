@@ -28,7 +28,7 @@
             <div class="navbar-actions">
                 <a href="messages.html" class="login-link">Mensajes</a>
                 <a href="tenant-dashboard.html" class="login-link active">Mi cuenta</a>
-                <a href="search.html" class="register-btn">Registrarse</a>
+                <a href="register.html" class="register-btn">Registrarse</a>
             </div>
         </div>
     </header>
@@ -81,7 +81,7 @@
                             </div>
                             <div class="reservation-actions">
                                 <a href="property-detail.html" class="btn-outline-sm">Ver propiedad</a>
-                                <a href="messages.html" class="btn-outline-sm">Mensajes</a>
+                                <a href="messages.html?host=María%20González&property=Apartamento%20moderno%20en%20Polanco&status=Confirmada&checkin=2026-04-20&checkout=2026-04-25" class="btn-outline-sm">Mensajes</a>
                             </div>
                         </article>
 
@@ -329,5 +329,52 @@
     </footer>
 
     <script src="script.js"></script>
+
+<script>
+// Parse URL query parameters
+const params = new URLSearchParams(window.location.search);
+
+// If reservation params exist, update the first reservation card
+if (params.has('title')) {
+    const firstCard = document.querySelector('.reservations-list .reservation-card');
+    if (firstCard) {
+        // Update property title
+        const titleEl = firstCard.querySelector('.reservation-details h3');
+        if (titleEl) titleEl.textContent = params.get('title');
+        
+        // Update dates
+        const checkin = params.get('checkin');
+        const checkout = params.get('checkout');
+        if (checkin && checkout) {
+            const datesEl = firstCard.querySelector('.reservation-dates');
+            if (datesEl) {
+                const checkinDate = new Date(checkin);
+                const checkoutDate = new Date(checkout);
+                const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+                const checkinStr = checkinDate.getDate() + ' ' + months[checkinDate.getMonth()];
+                const checkoutStr = checkoutDate.getDate() + ' ' + months[checkoutDate.getMonth()] + ' ' + checkoutDate.getFullYear();
+                datesEl.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ' + checkinStr + ' - ' + checkoutStr;
+            }
+        }
+        
+        // Update host
+        const host = params.get('host');
+        if (host) {
+            const hostEl = firstCard.querySelector('.reservation-host span');
+            if (hostEl) hostEl.textContent = 'Anfitrión: ' + host;
+        }
+        
+        // Update status
+        const status = params.get('status');
+        if (status) {
+            const statusEl = firstCard.querySelector('.reservation-status');
+            if (statusEl) {
+                statusEl.textContent = status;
+                statusEl.className = 'reservation-status ' + (status === 'Confirmada' ? 'confirmed' : 'pending');
+            }
+        }
+    }
+}
+</script>
 </body>
 </html>

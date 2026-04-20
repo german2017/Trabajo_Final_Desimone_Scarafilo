@@ -28,7 +28,7 @@
             <div class="navbar-actions">
                 <a href="messages.html" class="login-link active">Mensajes</a>
                 <a href="tenant-dashboard.html" class="login-link">Mi cuenta</a>
-                <a href="search.html" class="register-btn">Registrarse</a>
+                <a href="register.html" class="register-btn">Registrarse</a>
             </div>
         </div>
     </header>
@@ -218,5 +218,46 @@
     </a>
 
     <script src="script.js"></script>
+
+<script>
+// Parse URL query parameters
+const params = new URLSearchParams(window.location.search);
+
+// If message params exist, update the chat context
+if (params.has('host')) {
+    const host = params.get('host');
+    const property = params.get('property') || '';
+    const status = params.get('status') || '';
+    const checkin = params.get('checkin') || '';
+    const checkout = params.get('checkout') || '';
+    
+    // Update active conversation in sidebar
+    const activeConv = document.querySelector('.conversation-item.active');
+    if (activeConv) {
+        const convName = activeConv.querySelector('h4');
+        if (convName) convName.textContent = host;
+    }
+    
+    // Update chat header
+    const chatUserInfo = document.querySelector('.chat-user-info h3');
+    if (chatUserInfo) chatUserInfo.textContent = host;
+    
+    // Update property context card
+    const contextDetails = document.querySelector('.context-details');
+    if (contextDetails) {
+        const contextTitle = contextDetails.querySelector('h4');
+        const contextStatus = contextDetails.querySelector('span');
+        if (contextTitle) contextTitle.textContent = property;
+        if (contextStatus && checkin && checkout) {
+            const checkinDate = new Date(checkin);
+            const checkoutDate = new Date(checkout);
+            const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+            const checkinStr = checkinDate.getDate() + ' ' + months[checkinDate.getMonth()];
+            const checkoutStr = checkoutDate.getDate() + ' ' + months[checkoutDate.getMonth()] + ' ' + checkoutDate.getFullYear();
+            contextStatus.textContent = checkinStr + ' - ' + checkoutStr + ' · ' + status;
+        }
+    }
+}
+</script>
 </body>
 </html>
