@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente IA - Alquileres</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 9.5L12 4L21 9.5V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V9.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9 21V12H15V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="logo-text">Alquileres</span>
+            </a>
+            <nav class="navbar-nav">
+                <a href="index.html" class="nav-link">Explorar</a>
+                <a href="search.html" class="nav-link">Anfitriones</a>
+                <a href="assistant.html" class="nav-link active">Asistente IA</a>
+            </nav>
+            <div class="navbar-actions">
+                <a href="messages.html" class="login-link">Mensajes</a>
+                <a href="tenant-dashboard.html" class="login-link">Mi cuenta</a>
+                <a href="search.html" class="register-btn">Registrarse</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Assistant Main -->
+    <main class="assistant-main">
+        <div class="container">
+            <div class="assistant-layout">
+                <!-- Left Column - Chat -->
+                <div class="assistant-chat-section">
+                    <!-- Assistant Header -->
+                    <div class="assistant-header">
+                        <div class="assistant-avatar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/>
+                                <circle cx="8" cy="14" r="1"/><circle cx="12" cy="14" r="1"/><circle cx="16" cy="14" r="1"/>
+                            </svg>
+                            <span class="ai-badge">AI</span>
+                        </div>
+                        <div class="assistant-info">
+                            <h2>Asistente Alquileres</h2>
+                            <p>Aquí para ayudarte con cualquier pregunta</p>
+                        </div>
+                        <div class="assistant-status">
+                            <span class="status-dot"></span>
+                            <span>En línea</span>
+                        </div>
+                    </div>
+
+                    <!-- Quick Suggestions -->
+                    <div class="quick-suggestions">
+                        <button class="suggestion-chip">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                            Buscar propiedades
+                        </button>
+                        <button class="suggestion-chip">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            Mi reservación
+                        </button>
+                        <button class="suggestion-chip">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            Contactar anfitrión
+                        </button>
+                        <button class="suggestion-chip">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            Políticas de cancelación
+                        </button>
+                    </div>
+
+                    <!-- Chat Messages -->
+                    <div class="assistant-messages">
+                        <!-- AI Welcome Message -->
+                        <div class="message ai-message">
+                            <div class="message-avatar ai-avatar">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/>
+                                </svg>
+                            </div>
+                            <div class="message-bubble ai-bubble">
+                                <p>¡Hola! 👋 Soy el asistente IA de Alquileres. Estoy aquí para ayudarte con:</p>
+                                <ul class="ai-capabilities">
+                                    <li>🔍 Búsqueda de propiedades</li>
+                                    <li>📋 Información sobre reservaciones</li>
+                                    <li>💰 Políticas de precios y cancelaciones</li>
+                                    <li>🏠 Detalles de propiedades</li>
+                                    <li>❓ Respuestas a tus preguntas</li>
+                                </ul>
+                                <p>¿En qué puedo ayudarte hoy?</p>
+                                <span class="message-time">Ahora</span>
+                            </div>
+                        </div>
+
+                        <!-- User Message -->
+                        <div class="message user-message">
+                            <div class="message-bubble user-bubble">
+                                <p>Quiero buscar un apartamento en Polanco para 2 huéspedes del 20 al 25 de abril.</p>
+                                <span class="message-time">2:30 PM</span>
+                            </div>
+                        </div>
+
+                        <!-- AI Response -->
+                        <div class="message ai-message">
+                            <div class="message-avatar ai-avatar">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/>
+                                </svg>
+                            </div>
+                            <div class="message-bubble ai-bubble">
+                                <p>¡Perfecto! He encontrado <strong>156 propiedades</strong> disponibles en Polanco para esas fechas:</p>
+                                <div class="ai-property-suggestions">
+                                    <div class="ai-property-card">
+                                        <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=100&h=70&fit=crop" alt="Apartamento">
+                                        <div class="ai-property-info">
+                                            <h4>Apartamento moderno en Polanco</h4>
+                                            <div class="ai-property-meta">
+                                                <span>⭐ 4.9 (127 reseñas)</span>
+                                                <span class="ai-price">$1,850/noche</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ai-property-card">
+                                        <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=100&h=70&fit=crop" alt="Penthouse">
+                                        <div class="ai-property-info">
+                                            <h4>Penthouse con vista en Condesa</h4>
+                                            <div class="ai-property-meta">
+                                                <span>⭐ 5.0 (45 reseñas)</span>
+                                                <span class="ai-price">$2,800/noche</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p>¿Quieres ver más opciones o refinar la búsqueda?</p>
+                                <span class="message-time">2:31 PM</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input -->
+                    <div class="assistant-input">
+                        <div class="input-wrapper">
+                            <input type="text" placeholder="Escribe tu mensaje..." class="assistant-text-input">
+                            <button class="assistant-send-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="22" y1="2" x2="11" y2="13"/>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="input-hint">El asistente IA puede cometer errores. Verifica información importante.</p>
+                    </div>
+                </div>
+
+                <!-- Right Column - Recommendations -->
+                <div class="assistant-recommendations">
+                    <h3>Recomendaciones para ti</h3>
+                    
+                    <div class="recommendation-section">
+                        <h4>Populares en Polanco</h4>
+                        <div class="recommendation-list">
+                            <a href="property-detail.html" class="recommendation-item">
+                                <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=80&h=60&fit=crop" alt="Apartamento">
+                                <div class="recommendation-info">
+                                    <h5>Apartamento moderno</h5>
+                                    <span>$1,850/noche · ⭐ 4.9</span>
+                                </div>
+                            </a>
+                            <a href="property-detail.html" class="recommendation-item">
+                                <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=80&h=60&fit=crop" alt="Casa">
+                                <div class="recommendation-info">
+                                    <h5>Casa espaciosa</h5>
+                                    <span>$2,100/noche · ⭐ 4.8</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="recommendation-section">
+                        <h4>Ayuda rápida</h4>
+                        <div class="help-links">
+                            <a href="assistant.html" class="help-link-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                <span>Cómo funciona la reserva</span>
+                            </a>
+                            <a href="assistant.html" class="help-link-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                <span>Política de cancelación</span>
+                            </a>
+                            <a href="assistant.html" class="help-link-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                                <span>Métodos de pago</span>
+                            </a>
+                            <a href="assistant.html" class="help-link-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                <span>Contactar soporte</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="recommendation-section">
+                        <h4>Próximas reservaciones</h4>
+                        <div class="upcoming-reservations">
+                            <div class="reservation-mini">
+                                <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=50&h=50&fit=crop" alt="Apartamento">
+                                <div class="reservation-mini-info">
+                                    <h5>Polanco</h5>
+                                    <span>20 - 25 abril</span>
+                                </div>
+                                <a href="property-detail.html" class="reservation-mini-link">Ver</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="index.html" class="navbar-brand">
+                        <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 9.5L12 4L21 9.5V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V9.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M9 21V12H15V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="logo-text">Alquileres</span>
+                    </a>
+                    <p class="footer-tagline">Encuentra tu hogar temporal ideal con verificación y pagos seguros.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Explorar</h4>
+                    <a href="search.html">Buscar propiedades</a>
+                    <a href="search.html">Destinos populares</a>
+                    <a href="search.html">Experiencias</a>
+                </div>
+                <div class="footer-links">
+                    <h4>Anfitriones</h4>
+                    <a href="owner-dashboard.html">Panel de control</a>
+                    <a href="owner-dashboard.html">Publicar propiedad</a>
+                    <a href="assistant.html">Recursos</a>
+                </div>
+                <div class="footer-links">
+                    <h4>Soporte</h4>
+                    <a href="assistant.html">Asistente IA</a>
+                    <a href="assistant.html">Centro de ayuda</a>
+                    <a href="admin-dashboard.html">Admin</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Alquileres. Todos los derechos reservados.</p>
+                <div class="footer-legal">
+                    <a href="index.html">Términos</a>
+                    <a href="index.html">Privacidad</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,528 @@
+<!--
+Create the Search Results page for the Alquileres website using only HTML, CSS and vanilla JavaScript.
+
+Requirements:
+- Keep the same design language as index.html
+- Reuse the same navbar and footer structure
+- Add a compact search bar at the top of the content
+- Add a left sidebar with filters:
+  - destination
+  - check-in
+  - check-out
+  - price range
+  - property type
+  - verified properties only
+  - amenities
+- Main content area should show:
+  - results heading
+  - sorting dropdown
+  - responsive grid of property cards
+- Add 8 property cards using the same visual style as the home page
+- On desktop include a map placeholder panel on the right or top-right
+- On mobile stack everything vertically
+- Keep the page clean, premium and consistent with the current home page
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscar propiedades - Alquileres</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 9.5L12 4L21 9.5V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V9.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9 21V12H15V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="logo-text">Alquileres</span>
+            </a>
+            <nav class="navbar-nav">
+                <a href="index.html" class="nav-link">Explorar</a>
+                <a href="search.html" class="nav-link">Anfitriones</a>
+                <a href="assistant.html" class="nav-link">Asistente IA</a>
+            </nav>
+            <div class="navbar-actions">
+                <a href="messages.html" class="login-link">Mensajes</a>
+                <a href="tenant-dashboard.html" class="login-link">Mi cuenta</a>
+                <a href="search.html" class="register-btn">Registrarse</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Top Search Bar -->
+    <div class="search-top-bar">
+        <div class="container">
+            <div class="search-bar-compact">
+                <div class="search-input-group-compact">
+                    <svg class="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <input type="text" id="search-destination" class="search-input-compact" placeholder="¿A dónde vas?" value="Ciudad de México">
+                </div>
+                <div class="search-input-group-compact">
+                    <svg class="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <input type="date" id="search-checkin" class="search-input-compact" value="2026-04-20">
+                </div>
+                <div class="search-input-group-compact">
+                    <svg class="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <input type="date" id="search-checkout" class="search-input-compact" value="2026-04-25">
+                </div>
+                <div class="search-input-group-compact">
+                    <svg class="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <input type="text" id="search-guests" class="search-input-compact" placeholder="Huéspedes" value="2 huéspedes">
+                </div>
+                <button class="search-btn-compact" id="search-btn-compact">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                    Buscar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="search-main">
+        <div class="container">
+            <div class="search-layout">
+                <!-- Filters Sidebar -->
+                <aside class="filters-sidebar">
+                    <div class="filters-header">
+                        <h3>Filtros</h3>
+                        <button class="clear-filters">Limpiar todo</button>
+                    </div>
+
+                    <div class="filter-section">
+                        <h4 class="filter-title">Rango de precio</h4>
+                        <div class="price-range">
+                            <div class="price-inputs">
+                                <div class="price-input-group">
+                                    <span class="price-label">Mín</span>
+                                    <input type="text" class="price-input" placeholder="$0" value="$500">
+                                </div>
+                                <span class="price-separator">—</span>
+                                <div class="price-input-group">
+                                    <span class="price-label">Máx</span>
+                                    <input type="text" class="price-input" placeholder="$10,000" value="$3,000">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <h4 class="filter-title">Tipo de propiedad</h4>
+                        <div class="filter-options">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" checked>
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label">Apartamento</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label">Casa</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label">Loft</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label">Villa</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <h4 class="filter-title">Habitaciones</h4>
+                        <div class="filter-options">
+                            <label class="filter-checkbox">
+                                <input type="checkbox">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label">1 habitación</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" checked>
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label">2 habitaciones</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label">3+ habitaciones</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <h4 class="filter-title">Servicios</h4>
+                        <div class="filter-options">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" checked>
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label">WiFi</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" checked>
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label">Cocina</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label">Aire acondicionado</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label">Estacionamiento</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label">Piscina</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <h4 class="filter-title">Calificación</h4>
+                        <div class="filter-rating">
+                            <label class="rating-option">
+                                <input type="radio" name="rating" value="5">
+                                <span class="rating-stars">★★★★★</span>
+                                <span class="rating-label">5 estrellas</span>
+                            </label>
+                            <label class="rating-option">
+                                <input type="radio" name="rating" value="4" checked>
+                                <span class="rating-stars">★★★★☆</span>
+                                <span class="rating-label">4+ estrellas</span>
+                            </label>
+                            <label class="rating-option">
+                                <input type="radio" name="rating" value="3">
+                                <span class="rating-stars">★★★☆☆</span>
+                                <span class="rating-label">3+ estrellas</span>
+                            </label>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Results Area -->
+                <div class="results-area">
+                    <!-- Sorting -->
+                    <div class="results-header">
+                        <div class="results-count">
+                            <h2 id="results-heading">156 propiedades en Ciudad de México</h2>
+                            <p id="results-dates">Del 20 al 25 de abril · 2 huéspedes</p>
+                        </div>
+                        <div class="sort-dropdown">
+                            <label>Ordenar por:</label>
+                            <select class="sort-select">
+                                <option value="recommended">Recomendados</option>
+                                <option value="price-low">Precio: menor primero</option>
+                                <option value="price-high">Precio: mayor primero</option>
+                                <option value="rating">Calificación</option>
+                                <option value="distance">Distancia</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Property Cards Grid -->
+                    <div class="results-grid">
+                        <!-- Property Card 1 -->
+                        <article class="property-card">
+                            <div class="property-image">
+                                <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=300&fit=crop" alt="Apartamento Moderno en Polanco">
+                                <span class="verified-badge">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                                <button class="wishlist-btn" aria-label="Agregar a favoritos">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="property-content">
+                                <div class="property-header">
+                                    <h3 class="property-title">Apartamento moderno en Polanco</h3>
+                                    <div class="property-rating">
+                                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                        <span>4.9</span>
+                                        <span class="rating-count">(127)</span>
+                                    </div>
+                                </div>
+                                <p class="property-location">Polanco, Ciudad de México</p>
+                                <p class="property-dates">20 - 25 abril · 2 huéspedes</p>
+                                <div class="property-footer">
+                                    <div class="property-price">
+                                        <span class="price-currency">$</span><span class="price-amount">1,850</span>
+                                        <span class="price-period">/noche</span>
+                                    </div>
+                                    <a href="property-detail.html?id=1&destination=Polanco&checkin=2026-04-20&checkout=2026-04-25" class="property-link">Ver detalles</a>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- Property Card 2 -->
+                        <article class="property-card">
+                            <div class="property-image">
+                                <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&h=300&fit=crop" alt="Casa spacious en Roma Norte">
+                                <span class="verified-badge">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                                <button class="wishlist-btn" aria-label="Agregar a favoritos">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="property-content">
+                                <div class="property-header">
+                                    <h3 class="property-title">Casa espaciosa en Roma Norte</h3>
+                                    <div class="property-rating">
+                                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                        <span>4.8</span>
+                                        <span class="rating-count">(89)</span>
+                                    </div>
+                                </div>
+                                <p class="property-location">Roma Norte, Ciudad de México</p>
+                                <p class="property-dates">20 - 25 abril · 2 huéspedes</p>
+                                <div class="property-footer">
+                                    <div class="property-price">
+                                        <span class="price-currency">$</span><span class="price-amount">2,100</span>
+                                        <span class="price-period">/noche</span>
+                                    </div>
+                                    <a href="property-detail.html?id=2&destination=Roma+Norte&checkin=2026-04-20&checkout=2026-04-25" class="property-link">Ver detalles</a>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- Property Card 3 -->
+                        <article class="property-card">
+                            <div class="property-image">
+                                <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=300&fit=crop" alt="Loft céntrico en Centro Histórico">
+                                <span class="verified-badge">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                                <button class="wishlist-btn" aria-label="Agregar a favoritos">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="property-content">
+                                <div class="property-header">
+                                    <h3 class="property-title">Loft céntrico en Centro Histórico</h3>
+                                    <div class="property-rating">
+                                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                        <span>4.7</span>
+                                        <span class="rating-count">(203)</span>
+                                    </div>
+                                </div>
+                                <p class="property-location">Centro Histórico, Ciudad de México</p>
+                                <p class="property-dates">20 - 25 abril · 2 huéspedes</p>
+                                <div class="property-footer">
+                                    <div class="property-price">
+                                        <span class="price-currency">$</span><span class="price-amount">950</span>
+                                        <span class="price-period">/noche</span>
+                                    </div>
+                                    <a href="property-detail.html?id=3&destination=Centro+Hist%C3%B3rico&checkin=2026-04-20&checkout=2026-04-25" class="property-link">Ver detalles</a>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- Property Card 4 -->
+                        <article class="property-card">
+                            <div class="property-image">
+                                <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&h=300&fit=crop" alt="Penthouse con vista en Condesa">
+                                <span class="verified-badge">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                                <button class="wishlist-btn" aria-label="Agregar a favoritos">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="property-content">
+                                <div class="property-header">
+                                    <h3 class="property-title">Penthouse con vista en Condesa</h3>
+                                    <div class="property-rating">
+                                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                        <span>5.0</span>
+                                        <span class="rating-count">(45)</span>
+                                    </div>
+                                </div>
+                                <p class="property-location">Condesa, Ciudad de México</p>
+                                <p class="property-dates">20 - 25 abril · 2 huéspedes</p>
+                                <div class="property-footer">
+                                    <div class="property-price">
+                                        <span class="price-currency">$</span><span class="price-amount">2,800</span>
+                                        <span class="price-period">/noche</span>
+                                    </div>
+                                    <a href="property-detail.html?id=4&destination=Condesa&checkin=2026-04-20&checkout=2026-04-25" class="property-link">Ver detalles</a>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- Property Card 5 -->
+                        <article class="property-card">
+                            <div class="property-image">
+                                <img src="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=400&h=300&fit=crop" alt="Departamento en Juárez">
+                                <span class="verified-badge">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                                <button class="wishlist-btn" aria-label="Agregar a favoritos">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="property-content">
+                                <div class="property-header">
+                                    <h3 class="property-title">Departamento moderno en Juárez</h3>
+                                    <div class="property-rating">
+                                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                        <span>4.6</span>
+                                        <span class="rating-count">(78)</span>
+                                    </div>
+                                </div>
+                                <p class="property-location">Juárez, Ciudad de México</p>
+                                <p class="property-dates">20 - 25 abril · 2 huéspedes</p>
+                                <div class="property-footer">
+                                    <div class="property-price">
+                                        <span class="price-currency">$</span><span class="price-amount">1,200</span>
+                                        <span class="price-period">/noche</span>
+                                    </div>
+                                    <a href="property-detail.html?id=5&destination=Ju%C3%A1rez&checkin=2026-04-20&checkout=2026-04-25" class="property-link">Ver detalles</a>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- Property Card 6 -->
+                        <article class="property-card">
+                            <div class="property-image">
+                                <img src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=400&h=300&fit=crop" alt="Villa en San Ángel">
+                                <span class="verified-badge">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                                <button class="wishlist-btn" aria-label="Agregar a favoritos">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="property-content">
+                                <div class="property-header">
+                                    <h3 class="property-title">Villa tradicional en San Ángel</h3>
+                                    <div class="property-rating">
+                                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                        <span>4.9</span>
+                                        <span class="rating-count">(156)</span>
+                                    </div>
+                                </div>
+                                <p class="property-location">San Ángel, Ciudad de México</p>
+                                <p class="property-dates">20 - 25 abril · 2 huéspedes</p>
+                                <div class="property-footer">
+                                    <div class="property-price">
+                                        <span class="price-currency">$</span><span class="price-amount">3,200</span>
+                                        <span class="price-period">/noche</span>
+                                    </div>
+                                    <a href="property-detail.html?id=6&destination=San+%C3%81ngel&checkin=2026-04-20&checkout=2026-04-25" class="property-link">Ver detalles</a>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination">
+                        <button class="pagination-btn" disabled>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+                        </button>
+                        <span class="pagination-current">1</span>
+                        <button class="pagination-btn">2</button>
+                        <button class="pagination-btn">3</button>
+                        <span class="pagination-ellipsis">...</span>
+                        <button class="pagination-btn">26</button>
+                        <button class="pagination-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- AI Assistant Floating Button -->
+    <a href="assistant.html" class="ai-floating-btn">
+        <span class="ai-tooltip">¿Necesitas ayuda?</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/>
+            <circle cx="8" cy="14" r="1"/><circle cx="12" cy="14" r="1"/><circle cx="16" cy="14" r="1"/>
+        </svg>
+    </a>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="index.html" class="navbar-brand">
+                        <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 9.5L12 4L21 9.5V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V9.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M9 21V12H15V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="logo-text">Alquileres</span>
+                    </a>
+                    <p class="footer-tagline">Encuentra tu hogar temporal ideal con verificación y pagos seguros.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Explorar</h4>
+                    <a href="search.html">Buscar propiedades</a>
+                    <a href="search.html">Destinos populares</a>
+                    <a href="search.html">Experiencias</a>
+                </div>
+                <div class="footer-links">
+                    <h4>Anfitriones</h4>
+                    <a href="owner-dashboard.html">Panel de control</a>
+                    <a href="owner-dashboard.html">Publicar propiedad</a>
+                    <a href="assistant.html">Recursos</a>
+                </div>
+                <div class="footer-links">
+                    <h4>Soporte</h4>
+                    <a href="assistant.html">Asistente IA</a>
+                    <a href="assistant.html">Centro de ayuda</a>
+                    <a href="admin-dashboard.html">Admin</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Alquileres. Todos los derechos reservados.</p>
+                <div class="footer-legal">
+                    <a href="index.html">Términos</a>
+                    <a href="index.html">Privacidad</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
