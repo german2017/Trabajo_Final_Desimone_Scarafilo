@@ -1,0 +1,21 @@
+[
+  {
+    "id": "conversation-1",
+    "participants": ["tenant-1", "owner-1"],
+    "title": "Apartamento moderno en Polanco",
+    "messages": [
+      {
+        "id": "message-1",
+        "senderId": "owner-1",
+        "text": "¡Hola Juan! Bienvenido a Alquileres. Soy María, tu anfitriona. ¿Tienes alguna pregunta sobre el apartamento?",
+        "timestamp": "2026-04-20T14:15:00.000Z"
+      },
+      {
+        "id": "message-2",
+        "senderId": "tenant-1",
+        "text": "¡Hola María! Gracias por la bienvenida. Todo muy bien, solo quería confirmar el check-in.",
+        "timestamp": "2026-04-20T14:20:00.000Z"
+      }
+    ]
+  }
+]

@@ -255,33 +255,179 @@ document.addEventListener('DOMContentLoaded', function() {
             searchBtnCompact.click();
         }
     });
-    
-    // Update property card links to use current search bar values
-    const propertyLinks = document.querySelectorAll('.results-grid .property-link');
-    propertyLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            // Get current values from search bar
-            const currentDestination = searchDestination.value.trim() || 'Ciudad+de+México';
-            const currentCheckin = searchCheckin.value || '2026-04-20';
-            const currentCheckout = searchCheckout.value || '2026-04-25';
-            
-            // Build new href with current values
-            const baseUrl = this.href.split('?')[0];
-            const params = new URLSearchParams();
-            
-            // Extract property ID from current href
-            const currentParams = new URLSearchParams(this.href.split('?')[1] || '');
-            const propertyId = currentParams.get('id') || '1';
-            
-            params.set('id', propertyId);
-            params.set('destination', currentDestination);
-            params.set('checkin', currentCheckin);
-            params.set('checkout', currentCheckout);
-            
-            this.href = baseUrl + '?' + params.toString();
+
+    const resultsGrid = document.querySelector('.results-grid');
+    const resultsStatus = document.getElementById('results-status');
+    const resultsPagination = document.getElementById('results-pagination');
+
+    function setStatusMessage(message) {
+        if (resultsStatus) {
+            resultsStatus.textContent = message;
+            resultsStatus.style.display = 'block';
+        }
+        if (resultsGrid) {
+            resultsGrid.style.display = 'none';
+            resultsGrid.innerHTML = '';
+        }
+        if (resultsPagination) {
+            resultsPagination.style.display = 'none';
+        }
+    }
+
+    function clearStatusMessage() {
+        if (resultsStatus) {
+            resultsStatus.style.display = 'none';
+        }
+        if (resultsGrid) {
+            resultsGrid.style.display = 'grid';
+        }
+    }
+
+    function buildPropertyDetailUrl(propertyId) {
+        const detailParams = new URLSearchParams();
+        detailParams.set('id', propertyId);
+        if (searchDestination.value.trim()) {
+            detailParams.set('destination', searchDestination.value.trim());
+        }
+        if (searchCheckin.value) {
+            detailParams.set('checkin', searchCheckin.value);
+        }
+        if (searchCheckout.value) {
+            detailParams.set('checkout', searchCheckout.value);
+        }
+        return `property-detail.html?${detailParams.toString()}`;
+    }
+
+    function createStarIcon() {
+        return '<svg class="star-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
+    }
+
+    function createPropertyCard(property) {
+        const article = document.createElement('article');
+        article.className = 'property-card';
+
+        const imageWrapper = document.createElement('div');
+        imageWrapper.className = 'property-image';
+
+        const image = document.createElement('img');
+        image.src = property.image || 'https://via.placeholder.com/400x300?text=Sin+imagen';
+        image.alt = property.title || 'Propiedad';
+        imageWrapper.appendChild(image);
+
+        if (property.verified) {
+            const verifiedBadge = document.createElement('span');
+            verifiedBadge.className = 'verified-badge';
+            verifiedBadge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+            imageWrapper.appendChild(verifiedBadge);
+        }
+
+        const wishlistBtn = document.createElement('button');
+        wishlistBtn.className = 'wishlist-btn';
+        wishlistBtn.type = 'button';
+        wishlistBtn.setAttribute('aria-label', 'Agregar a favoritos');
+        wishlistBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+        wishlistBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            this.classList.toggle('active');
         });
-    });
-    
+        imageWrapper.appendChild(wishlistBtn);
+
+        const content = document.createElement('div');
+        content.className = 'property-content';
+
+        const header = document.createElement('div');
+        header.className = 'property-header';
+
+        const title = document.createElement('h3');
+        title.className = 'property-title';
+        title.textContent = property.title || 'Propiedad';
+
+        const rating = document.createElement('div');
+        rating.className = 'property-rating';
+        rating.innerHTML = `${createStarIcon()}<span>${(property.rating || 0).toFixed(1)}</span>`;
+
+        header.appendChild(title);
+        header.appendChild(rating);
+
+        const location = document.createElement('p');
+        location.className = 'property-location';
+        location.textContent = property.location || 'Ubicación no disponible';
+
+        const footer = document.createElement('div');
+        footer.className = 'property-footer';
+
+        const price = document.createElement('div');
+        price.className = 'property-price';
+        price.innerHTML = `<span class="price-currency">${property.currency || '$'}</span><span class="price-amount">${property.price || 0}</span><span class="price-period">/noche</span>`;
+
+        const detailsLink = document.createElement('a');
+        detailsLink.className = 'property-link';
+        detailsLink.href = buildPropertyDetailUrl(property.id || '');
+        detailsLink.textContent = 'Ver detalles';
+
+        footer.appendChild(price);
+        footer.appendChild(detailsLink);
+
+        content.appendChild(header);
+        content.appendChild(location);
+        content.appendChild(footer);
+
+        article.appendChild(imageWrapper);
+        article.appendChild(content);
+
+        return article;
+    }
+
+    function updateResultsHeading(count) {
+        if (resultsHeading) {
+            resultsHeading.textContent = `${count} propiedades en ${displayDestination}`;
+        }
+    }
+
+    async function loadSearchResults() {
+        setStatusMessage('Cargando propiedades...');
+
+        try {
+            const response = await fetch('http://localhost:3000/api/properties');
+            if (!response.ok) {
+                throw new Error('Respuesta de red no exitosa');
+            }
+
+            const result = await response.json();
+            const properties = Array.isArray(result.properties) ? result.properties : [];
+            const destinationFilter = destination ? destination.toLowerCase().trim() : '';
+            const filteredProperties = destinationFilter
+                ? properties.filter((item) => {
+                    const titleText = item.title ? item.title.toLowerCase() : '';
+                    const locationText = item.location ? item.location.toLowerCase() : '';
+                    return titleText.includes(destinationFilter) || locationText.includes(destinationFilter);
+                })
+                : properties;
+
+            if (filteredProperties.length === 0) {
+                updateResultsHeading(0);
+                setStatusMessage('No se encontraron propiedades');
+                return;
+            }
+
+            clearStatusMessage();
+            if (resultsGrid) {
+                resultsGrid.innerHTML = '';
+                filteredProperties.forEach((property) => resultsGrid.appendChild(createPropertyCard(property)));
+            }
+            if (resultsPagination) {
+                resultsPagination.style.display = '';
+            }
+            updateResultsHeading(filteredProperties.length);
+        } catch (error) {
+            console.error('Error al cargar propiedades:', error);
+            updateResultsHeading(0);
+            setStatusMessage('No se pudo conectar con el servidor');
+        }
+    }
+
+    loadSearchResults();
+
     console.log('Alquileres - Search page initialized with params:', {
         destination: destination || 'default',
         checkin: checkin || 'default',
@@ -301,43 +447,254 @@ document.addEventListener('DOMContentLoaded', function() {
     const serviceFee = document.getElementById('service-fee');
     const deposit = document.getElementById('deposit');
     const priceTotal = document.getElementById('price-total');
+    const detailStatus = document.getElementById('property-detail-status');
+    const detailContent = document.querySelector('.property-detail-content');
+    const gallerySection = document.querySelector('.property-gallery');
+    const mainImage = document.getElementById('property-gallery-main-img');
+    const galleryGrid = document.getElementById('gallery-grid');
+    const titleEl = document.getElementById('property-title');
+    const locationEl = document.getElementById('property-location');
+    const ratingValueEl = document.getElementById('property-rating-value');
+    const reviewCountEl = document.getElementById('property-review-count');
+    const hostNameEl = document.getElementById('host-name');
+    const hostVerifiedBadge = document.getElementById('host-verified-badge');
+    const hostAvatarEl = document.getElementById('host-avatar-img');
+    const descriptionContainer = document.getElementById('property-description');
+    const amenitiesGrid = document.getElementById('amenities-grid');
+    const reserveBtn = document.getElementById('reserve-btn');
+    const bookingGuests = document.getElementById('booking-guests');
+    const bookingPriceAmount = document.querySelector('.booking-price .price-amount');
+    const bookingPriceCurrency = document.querySelector('.booking-price .price-currency');
+    const bookingRatingValue = document.querySelector('.booking-rating span');
     
     if (!bookingCheckin) return; // Not on property detail page
     
     // Read query parameters from URL
     const params = new URLSearchParams(window.location.search);
-    const propertyId = params.get('id');
+    const rawPropertyId = params.get('id') || '1';
+    const propertyId = /^\d+$/.test(rawPropertyId) ? rawPropertyId : rawPropertyId.replace(/^property-/, '') || '1';
     const destination = params.get('destination');
     const checkin = params.get('checkin');
     const checkout = params.get('checkout');
     
-    // Default pricing values (for this specific property - Apartment in Polanco)
-    const nightlyPrice = 1850;
+    // Default pricing values
+    let nightlyPrice = 1850;
     const cleaningPrice = 500;
     const serviceFeePercent = 0.10; // 10% service fee
     const depositAmount = 3700;
+    let currentPropertyTitle = 'Apartamento moderno en Polanco';
+    let currentPropertyLocation = 'Polanco, Ciudad de México';
     
-    // Helper function to calculate nights between dates
     function calculateNights(checkinDate, checkoutDate) {
-        if (!checkinDate || !checkoutDate) return 5; // Default 5 nights
+        if (!checkinDate || !checkoutDate) return 5;
         const start = new Date(checkinDate + 'T00:00:00');
         const end = new Date(checkoutDate + 'T00:00:00');
         const diffTime = end - start;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return diffDays > 0 ? diffDays : 5; // Default to 5 if invalid
+        return diffDays > 0 ? diffDays : 5;
     }
     
-    // Helper function to format number with commas
     function formatPrice(num) {
-        return '$' + num.toLocaleString('es-MX');
+        return '$' + Number(num || 0).toLocaleString('es-MX');
     }
     
-    // Helper function to format date for display
-    function formatDate(dateStr) {
-        if (!dateStr) return '';
-        const date = new Date(dateStr + 'T00:00:00');
-        const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-        return date.getDate() + ' ' + months[date.getMonth()];
+    function setStatusMessage(message, isError = false) {
+        if (!detailStatus) return;
+        detailStatus.textContent = message;
+        detailStatus.classList.toggle('error', isError);
+        detailStatus.style.display = 'block';
+    }
+    
+    function hideStatusMessage() {
+        if (!detailStatus) return;
+        detailStatus.style.display = 'none';
+    }
+    
+    function showDetailSections(show) {
+        if (detailContent) {
+            detailContent.style.display = show ? '' : 'none';
+        }
+        if (gallerySection) {
+            gallerySection.style.display = show ? '' : 'none';
+        }
+    }
+    
+    function updatePriceBreakdown() {
+        const nights = calculateNights(bookingCheckin.value, bookingCheckout.value);
+        const subtotal = nightlyPrice * nights;
+        const calculatedServiceFee = Math.round(subtotal * serviceFeePercent);
+        const total = subtotal + cleaningPrice + calculatedServiceFee + depositAmount;
+    
+        if (priceNights) {
+            priceNights.innerHTML = `<span>${formatPrice(nightlyPrice)} x ${nights} noches</span><span>${formatPrice(subtotal)}</span>`;
+        }
+        if (cleaningFee) {
+            cleaningFee.textContent = formatPrice(cleaningPrice);
+        }
+        if (serviceFee) {
+            serviceFee.textContent = formatPrice(calculatedServiceFee);
+        }
+        if (deposit) {
+            deposit.textContent = formatPrice(depositAmount);
+        }
+        if (priceTotal) {
+            priceTotal.innerHTML = `<span>Total</span><span>${formatPrice(total)}</span>`;
+        }
+    }
+    
+    function buildBookingUrl() {
+        const checkinVal = bookingCheckin.value || '2026-04-20';
+        const checkoutVal = bookingCheckout.value || '2026-04-25';
+        const guestsVal = bookingGuests ? bookingGuests.value : '2';
+        const currentNights = calculateNights(checkinVal, checkoutVal);
+        const currentSubtotal = nightlyPrice * currentNights;
+        const currentServiceFee = Math.round(currentSubtotal * serviceFeePercent);
+        const currentTotal = currentSubtotal + cleaningPrice + currentServiceFee + depositAmount;
+        
+        const params = new URLSearchParams();
+        params.set('id', propertyId || '1');
+        params.set('title', currentPropertyTitle);
+        params.set('location', currentPropertyLocation);
+        params.set('checkin', checkinVal);
+        params.set('checkout', checkoutVal);
+        params.set('guests', guestsVal);
+        params.set('nights', currentNights);
+        params.set('price', nightlyPrice);
+        params.set('total', currentTotal);
+        
+        return 'booking.html?' + params.toString();
+    }
+    
+    function updateHostSection(host) {
+        if (!host) return;
+        if (hostNameEl) {
+            hostNameEl.textContent = host.name || 'Anfitrión';
+        }
+        if (hostAvatarEl) {
+            hostAvatarEl.src = host.avatar || hostAvatarEl.src;
+            hostAvatarEl.alt = host.name || 'Anfitrión';
+        }
+        if (hostVerifiedBadge) {
+            hostVerifiedBadge.style.display = host.verified ? '' : 'none';
+        }
+    }
+    
+    function updateDescription(description) {
+        if (!descriptionContainer) return;
+        descriptionContainer.innerHTML = '';
+        if (Array.isArray(description) && description.length) {
+            description.forEach((paragraph) => {
+                const p = document.createElement('p');
+                p.className = 'property-description';
+                p.textContent = paragraph;
+                descriptionContainer.appendChild(p);
+            });
+        } else if (typeof description === 'string') {
+            const p = document.createElement('p');
+            p.className = 'property-description';
+            p.textContent = description;
+            descriptionContainer.appendChild(p);
+        } else {
+            const p = document.createElement('p');
+            p.className = 'property-description';
+            p.textContent = 'Descripción no disponible para esta propiedad.';
+            descriptionContainer.appendChild(p);
+        }
+    }
+    
+    function updateAmenities(amenities) {
+        if (!amenitiesGrid) return;
+        amenitiesGrid.innerHTML = '';
+        if (Array.isArray(amenities) && amenities.length) {
+            amenities.forEach((item) => {
+                const amenity = document.createElement('div');
+                amenity.className = 'amenity-item';
+                amenity.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg><span>${item}</span>`;
+                amenitiesGrid.appendChild(amenity);
+            });
+        } else {
+            const placeholder = document.createElement('div');
+            placeholder.className = 'amenity-item';
+            placeholder.innerHTML = '<span>No hay servicios disponibles.</span>';
+            amenitiesGrid.appendChild(placeholder);
+        }
+    }
+    
+    function updateGallery(images) {
+        if (!mainImage || !galleryGrid) return;
+        if (Array.isArray(images) && images.length) {
+            mainImage.src = images[0];
+            galleryGrid.innerHTML = '';
+            images.slice(1, 5).forEach((imgUrl, index) => {
+                const img = document.createElement('img');
+                img.src = imgUrl;
+                img.alt = `Imagen ${index + 2}`;
+                galleryGrid.appendChild(img);
+            });
+            galleryGrid.style.display = images.length > 1 ? 'grid' : 'none';
+        } else {
+            galleryGrid.innerHTML = '';
+            galleryGrid.style.display = 'none';
+        }
+    }
+    
+    function populatePropertyDetails(property) {
+        if (titleEl) {
+            titleEl.textContent = property.title || titleEl.textContent;
+        }
+        if (locationEl) {
+            const textNode = Array.from(locationEl.childNodes).find((node) => node.nodeType === Node.TEXT_NODE);
+            if (textNode) {
+                textNode.textContent = ' ' + (property.location || locationEl.textContent.trim());
+            }
+        }
+        if (ratingValueEl) {
+            ratingValueEl.textContent = property.rating ? property.rating.toFixed(1) : '0.0';
+        }
+        if (reviewCountEl) {
+            reviewCountEl.textContent = `(${property.reviewCount || 0} reseñas)`;
+        }
+        if (bookingPriceAmount) {
+            bookingPriceAmount.textContent = property.price || nightlyPrice;
+        }
+        if (bookingPriceCurrency) {
+            bookingPriceCurrency.textContent = property.currency || '$';
+        }
+        if (bookingRatingValue) {
+            bookingRatingValue.textContent = property.rating ? property.rating.toFixed(1) : '0.0';
+        }
+        if (property.image && mainImage) {
+            mainImage.src = property.image;
+        }
+        currentPropertyTitle = property.title || currentPropertyTitle;
+        currentPropertyLocation = property.location || currentPropertyLocation;
+        if (property.price) {
+            nightlyPrice = property.price;
+        }
+        updateHostSection(property.host);
+        updateDescription(property.description);
+        updateAmenities(property.amenities);
+        updateGallery(property.gallery || [property.image]);
+        document.title = `${currentPropertyTitle} - Alquileres`;
+    }
+    
+    function updateContentAfterLoad() {
+        hideStatusMessage();
+        showDetailSections(true);
+        updatePriceBreakdown();
+        if (reserveBtn) {
+            reserveBtn.href = buildBookingUrl();
+        }
+    }
+    
+    function setLoadingState() {
+        setStatusMessage('Cargando propiedad...', false);
+        showDetailSections(false);
+    }
+    
+    function setErrorState(message) {
+        setStatusMessage(message, true);
+        showDetailSections(false);
     }
     
     // Prefill date inputs if query params exist
@@ -348,121 +705,56 @@ document.addEventListener('DOMContentLoaded', function() {
         bookingCheckout.value = checkout;
     }
     
-    // Calculate and update pricing
-    const nights = calculateNights(bookingCheckin.value, bookingCheckout.value);
-    const subtotal = nightlyPrice * nights;
-    const calculatedServiceFee = Math.round(subtotal * serviceFeePercent);
-    const total = subtotal + cleaningPrice + calculatedServiceFee + depositAmount;
+    async function loadProperty() {
+        setLoadingState();
+        try {
+            const response = await fetch(`http://localhost:3000/api/properties/${propertyId}`);
+            if (!response.ok) {
+                if (response.status === 404) {
+                    setErrorState('Propiedad no encontrada');
+                    return;
+                }
+                throw new Error('Respuesta de red no exitosa');
+            }
+            const result = await response.json();
+            const property = result.property;
+            if (!property) {
+                setErrorState('Propiedad no encontrada');
+                return;
+            }
+            populatePropertyDetails(property);
+            updateContentAfterLoad();
+        } catch (error) {
+            console.error('Error al cargar propiedad:', error);
+            setErrorState('No se pudo conectar con el servidor');
+        }
+    }
     
-    // Update price breakdown
-    if (priceNights) {
-        priceNights.innerHTML = `<span>${formatPrice(nightlyPrice)} x ${nights} noches</span><span>${formatPrice(subtotal)}</span>`;
-    }
-    if (cleaningFee) {
-        cleaningFee.textContent = formatPrice(cleaningPrice);
-    }
-    if (serviceFee) {
-        serviceFee.textContent = formatPrice(calculatedServiceFee);
-    }
-    if (deposit) {
-        deposit.textContent = formatPrice(depositAmount);
-    }
-    if (priceTotal) {
-        priceTotal.innerHTML = `<span>Total</span><span>${formatPrice(total)}</span>`;
+    function handleBookingChange() {
+        updatePriceBreakdown();
+        if (reserveBtn) {
+            reserveBtn.href = buildBookingUrl();
+        }
     }
     
-    // Add event listeners to recalculate when dates change
-    bookingCheckin.addEventListener('change', function() {
-        const newNights = calculateNights(bookingCheckin.value, bookingCheckout.value);
-        const newSubtotal = nightlyPrice * newNights;
-        const newServiceFee = Math.round(newSubtotal * serviceFeePercent);
-        const newTotal = newSubtotal + cleaningPrice + newServiceFee + depositAmount;
-        
-        if (priceNights) {
-            priceNights.innerHTML = `<span>${formatPrice(nightlyPrice)} x ${newNights} noches</span><span>${formatPrice(newSubtotal)}</span>`;
-        }
-        if (serviceFee) {
-            serviceFee.textContent = formatPrice(newServiceFee);
-        }
-        if (priceTotal) {
-            priceTotal.innerHTML = `<span>Total</span><span>${formatPrice(newTotal)}</span>`;
-        }
-    });
+    bookingCheckin.addEventListener('change', handleBookingChange);
+    bookingCheckout.addEventListener('change', handleBookingChange);
+    if (bookingGuests) {
+        bookingGuests.addEventListener('change', handleBookingChange);
+    }
     
-    bookingCheckout.addEventListener('change', function() {
-        const newNights = calculateNights(bookingCheckin.value, bookingCheckout.value);
-        const newSubtotal = nightlyPrice * newNights;
-        const newServiceFee = Math.round(newSubtotal * serviceFeePercent);
-        const newTotal = newSubtotal + cleaningPrice + newServiceFee + depositAmount;
-        
-        if (priceNights) {
-            priceNights.innerHTML = `<span>${formatPrice(nightlyPrice)} x ${newNights} noches</span><span>${formatPrice(newSubtotal)}</span>`;
-        }
-        if (serviceFee) {
-            serviceFee.textContent = formatPrice(newServiceFee);
-        }
-        if (priceTotal) {
-            priceTotal.innerHTML = `<span>Total</span><span>${formatPrice(newTotal)}</span>`;
-        }
-    });
+    if (reserveBtn) {
+        reserveBtn.href = buildBookingUrl();
+    }
+    
+    loadProperty();
     
     console.log('Alquileres - Property detail page initialized:', {
         propertyId: propertyId || 'default',
         destination: destination || 'default',
         checkin: checkin || 'default',
-        checkout: checkout || 'default',
-        nights: nights,
-        total: total
+        checkout: checkout || 'default'
     });
-    
-    // Update reserve button with query parameters
-    const reserveBtn = document.getElementById('reserve-btn');
-    const bookingGuests = document.getElementById('booking-guests');
-    
-    if (reserveBtn) {
-        // Function to build the booking URL with current values
-        function buildBookingUrl() {
-            const checkinVal = bookingCheckin.value || '2026-04-20';
-            const checkoutVal = bookingCheckout.value || '2026-04-25';
-            const guestsVal = bookingGuests ? bookingGuests.value : '2';
-            const currentNights = calculateNights(checkinVal, checkoutVal);
-            const currentSubtotal = nightlyPrice * currentNights;
-            const currentServiceFee = Math.round(currentSubtotal * serviceFeePercent);
-            const currentTotal = currentSubtotal + cleaningPrice + currentServiceFee + depositAmount;
-            
-            const params = new URLSearchParams();
-            params.set('id', propertyId || '1');
-            params.set('title', 'Apartamento moderno en Polanco');
-            params.set('location', 'Polanco, Ciudad de México');
-            params.set('checkin', checkinVal);
-            params.set('checkout', checkoutVal);
-            params.set('guests', guestsVal);
-            params.set('nights', currentNights);
-            params.set('price', nightlyPrice);
-            params.set('total', currentTotal);
-            params.set('host', 'María González');
-            
-            return 'booking.html?' + params.toString();
-        }
-        
-        // Set initial href
-        reserveBtn.href = buildBookingUrl();
-        
-        // Update href when dates or guests change
-        bookingCheckin.addEventListener('change', function() {
-            reserveBtn.href = buildBookingUrl();
-        });
-        
-        bookingCheckout.addEventListener('change', function() {
-            reserveBtn.href = buildBookingUrl();
-        });
-        
-        if (bookingGuests) {
-            bookingGuests.addEventListener('change', function() {
-                reserveBtn.href = buildBookingUrl();
-            });
-        }
-    }
 });
 
 /**

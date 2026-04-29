@@ -1,0 +1,23 @@
+[
+  {
+    "id": "tenant-1",
+    "name": "Juan Pérez",
+    "email": "juan.perez@example.com",
+    "password": "password123",
+    "role": "tenant"
+  },
+  {
+    "id": "owner-1",
+    "name": "María González",
+    "email": "maria.gonzalez@example.com",
+    "password": "password123",
+    "role": "owner"
+  },
+  {
+    "id": "admin-1",
+    "name": "Administrador",
+    "email": "admin@example.com",
+    "password": "admin123",
+    "role": "admin"
+  }
+]
