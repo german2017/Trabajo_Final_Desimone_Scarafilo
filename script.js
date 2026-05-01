@@ -14,47 +14,85 @@ async function apiFetch(path, options = {}) {
     }
 }
 
+function getStoredUser() {
+    try {
+        return JSON.parse(localStorage.getItem('alquileres_user'));
+    } catch (error) {
+        return null;
+    }
+}
+
+function normalizeSessionRole(role) {
+    const normalized = String(role || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+    if (normalized === 'huesped' || normalized === 'tenant') {
+        return 'tenant';
+    }
+
+    if (normalized === 'anfitrion' || normalized === 'owner') {
+        return 'owner';
+    }
+
+    if (normalized === 'administrador' || normalized === 'admin') {
+        return 'admin';
+    }
+
+    return normalized;
+}
+
+function getDashboardLink(role) {
+    switch (normalizeSessionRole(role)) {
+        case 'owner':
+            return { href: 'owner-dashboard.html', text: 'Mi panel' };
+        case 'admin':
+            return { href: 'admin-dashboard.html', text: 'Admin' };
+        case 'tenant':
+        default:
+            return { href: 'tenant-dashboard.html', text: 'Mi cuenta' };
+    }
+}
+
+(function guardProtectedPages() {
+    const protectedPages = new Set([
+        'tenant-dashboard.html',
+        'owner-dashboard.html',
+        'admin-dashboard.html',
+        'create-property.html',
+        'booking.html',
+        'booking-success.html',
+        'messages.html'
+    ]);
+
+    const rolePages = {
+        'tenant-dashboard.html': 'tenant',
+        'owner-dashboard.html': 'owner',
+        'admin-dashboard.html': 'admin',
+        'create-property.html': 'owner'
+    };
+
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    if (!protectedPages.has(currentPage)) return;
+
+    const user = getStoredUser();
+    if (!user?.id) {
+        window.location.replace('login.html');
+        return;
+    }
+
+    const expectedRole = rolePages[currentPage];
+    const currentRole = normalizeSessionRole(user.role);
+
+    if (expectedRole && currentRole !== expectedRole) {
+        window.location.replace(getDashboardLink(currentRole).href);
+    }
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
     const navbarActions = document.querySelector('.navbar-actions');
     if (!navbarActions) return;
-
-    function getStoredUser() {
-        try {
-            return JSON.parse(localStorage.getItem('alquileres_user'));
-        } catch (error) {
-            return null;
-        }
-    }
-
-    function normalizeSessionRole(role) {
-        const normalized = String(role || '').toLowerCase();
-
-        if (normalized === 'huesped' || normalized === 'huésped' || normalized === 'tenant') {
-            return 'tenant';
-        }
-
-        if (normalized === 'anfitrion' || normalized === 'anfitrión' || normalized === 'owner') {
-            return 'owner';
-        }
-
-        if (normalized === 'administrador' || normalized === 'admin') {
-            return 'admin';
-        }
-
-        return normalized;
-    }
-
-    function getDashboardLink(role) {
-        switch (normalizeSessionRole(role)) {
-            case 'owner':
-                return { href: 'owner-dashboard.html', text: 'Mi panel' };
-            case 'admin':
-                return { href: 'admin-dashboard.html', text: 'Admin' };
-            case 'tenant':
-            default:
-                return { href: 'tenant-dashboard.html', text: 'Mi cuenta' };
-        }
-    }
 
     function isCurrentPage(href) {
         const currentPage = window.location.pathname.split('/').pop() || 'index.html';
@@ -581,6 +619,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const depositAmount = 3700;
     let currentPropertyTitle = 'Apartamento moderno en Polanco';
     let currentPropertyLocation = 'Polanco, Ciudad de México';
+    let currentPropertyOwnerId = 'owner-1';
+    let currentPropertyHost = 'María González';
     
     function calculateNights(checkinDate, checkoutDate) {
         if (!checkinDate || !checkoutDate) return 5;
@@ -650,8 +690,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const params = new URLSearchParams();
         params.set('id', propertyId || '1');
+        params.set('propertyId', propertyId || '1');
+        params.set('ownerId', currentPropertyOwnerId || 'owner-1');
         params.set('title', currentPropertyTitle);
         params.set('location', currentPropertyLocation);
+        params.set('host', currentPropertyHost);
         params.set('checkin', checkinVal);
         params.set('checkout', checkoutVal);
         params.set('guests', guestsVal);
@@ -765,6 +808,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         currentPropertyTitle = property.title || currentPropertyTitle;
         currentPropertyLocation = property.location || currentPropertyLocation;
+        currentPropertyOwnerId = property.ownerId || currentPropertyOwnerId;
+        currentPropertyHost = property.host?.name || property.ownerName || property.owner || currentPropertyHost;
         if (property.price) {
             nightlyPrice = property.price;
         }
@@ -964,7 +1009,7 @@ document.addEventListener('DOMContentLoaded', function() {
             guests: Number(guests),
             nights: Number(nights),
             total: Number(total),
-            status: 'Confirmada'
+            status: 'Pendiente'
         };
 
         try {
@@ -1003,8 +1048,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const params = new URLSearchParams();
-            params.set('id', bookingId);
+            params.set('id', propertyId);
+            params.set('bookingId', bookingId);
             if (confirmationCode) params.set('code', confirmationCode);
+            params.set('title', title);
+            params.set('location', location);
+            params.set('host', host);
+            params.set('checkin', checkin);
+            params.set('checkout', checkout);
+            params.set('guests', guests);
+            params.set('nights', nights);
+            params.set('total', total);
             window.location.href = `booking-success.html?${params.toString()}`;
         } catch (error) {
             console.error('Error al enviar la reserva:', error);
@@ -1243,10 +1297,37 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
+    function getTenantStatusClass(status) {
+        const normalized = String(status || '').toLowerCase();
+
+        if (normalized.includes('confirm')) return 'confirmed';
+        if (normalized.includes('pend')) return 'pending';
+        if (normalized.includes('rechaz')) return 'rejected';
+        if (normalized.includes('complet')) return 'completed';
+
+        return '';
+    }
+
+    function getTenantStatusMessage(status) {
+        const normalized = String(status || '').toLowerCase();
+
+        if (normalized.includes('rechaz')) {
+            return 'Esta reserva fue rechazada por el anfitrión.';
+        }
+
+        if (normalized.includes('pend')) {
+            return 'Esperando confirmación del anfitrión.';
+        }
+
+        return '';
+    }
+
     function renderReservationCard(item) {
-        const statusClass = item.status.toLowerCase().includes('confirm') ? 'confirmed' : item.status.toLowerCase().includes('pend') ? 'pending' : '';
+        const statusClass = getTenantStatusClass(item.status);
+        const statusMessage = getTenantStatusMessage(item.status);
         const detailsHref = item.propertyId ? `property-detail.html?id=${encodeURIComponent(item.propertyId)}` : 'property-detail.html';
         const messagesHref = `messages.html?host=${encodeURIComponent(item.owner || '')}&property=${encodeURIComponent(item.title || '')}&status=${encodeURIComponent(item.status)}&checkin=${encodeURIComponent(item.checkin)}&checkout=${encodeURIComponent(item.checkout)}`;
+        const statusMessageHtml = statusMessage ? `<p class="reservation-status-message">${statusMessage}</p>` : '';
         const ownerHtml = item.owner ? `<div class="reservation-host"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=30&h=30&fit=crop" alt="${item.owner}"><span>Anfitrión: ${item.owner}</span></div>` : '';
 
         return `
@@ -1264,6 +1345,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span class="reservation-status ${statusClass}">${item.status}</span>
                     </div>
                     ${ownerHtml}
+                    ${statusMessageHtml}
                 </div>
                 <div class="reservation-actions">
                     <a href="${detailsHref}" class="btn-outline-sm">Ver propiedad</a>
@@ -1445,8 +1527,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const title = booking.title || property?.title || `Propiedad ${booking.propertyId || ''}`.trim();
         const total = getOwnerBookingTotal(booking, property);
         const status = booking.status || 'Pendiente';
-        const isPending = status.toLowerCase().includes('pend');
-        const statusClass = status.toLowerCase().includes('confirm') ? 'confirmed' : isPending ? 'pending' : '';
+        const normalizedStatus = status.toLowerCase();
+        const isPending = normalizedStatus.includes('pend');
+        const statusClass = normalizedStatus.includes('confirm')
+            ? 'confirmed'
+            : normalizedStatus.includes('rechaz')
+                ? 'rejected'
+                : isPending ? 'pending' : '';
         const messagesParams = new URLSearchParams();
         messagesParams.set('property', title);
         messagesParams.set('status', status);
@@ -1560,7 +1647,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (error) {
                 console.error('Error actualizando reserva:', error);
                 actionButton.disabled = false;
-                alert('No se pudo actualizar la reserva. Intenta nuevamente.');
+                alert('No se pudo actualizar la reserva.');
             }
         });
     }
@@ -1944,19 +2031,20 @@ document.addEventListener('DOMContentLoaded', function() {
         const property = propertiesById.get(normalizeAdminPropertyId(booking.propertyId));
         const tenant = usersById.get(booking.tenantId);
         const title = booking.title || property?.title || booking.propertyId || 'Propiedad';
+        const tenantLabel = booking.tenantId || tenant?.id || 'Sin huésped';
         const total = getAdminBookingTotal(booking, property);
         const status = booking.status || 'Pendiente';
         const statusClass = status.toLowerCase().includes('confirm') ? 'urgent' : 'pending';
         return `
             <div class="dispute-item">
                 <div class="dispute-header">
-                    <span class="dispute-id">${escapeAdminHtml(booking.id || 'Reserva')}</span>
+                    <span class="dispute-id">Reserva ${escapeAdminHtml(booking.id || 'sin ID')}</span>
                     <span class="dispute-status ${statusClass}">${escapeAdminHtml(status)}</span>
                 </div>
                 <div class="dispute-parties">
                     <span class="party">${escapeAdminHtml(title)}</span>
                     <span class="vs">·</span>
-                    <span class="party">${escapeAdminHtml(tenant?.name || booking.tenantId || 'Huésped')}</span>
+                    <span class="party">Tenant: ${escapeAdminHtml(tenantLabel)}</span>
                 </div>
                 <p class="dispute-issue">${escapeAdminHtml(formatAdminDate(booking.checkin))} - ${escapeAdminHtml(formatAdminDate(booking.checkout))} · Total: ${escapeAdminHtml(formatAdminMoney(total))}</p>
             </div>
@@ -2023,4 +2111,128 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     loadAdminDashboard();
+});
+
+/*
+ * Create Property - Publish owner properties through backend
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    const createPropertyForm = document.getElementById('createPropertyForm');
+    if (!createPropertyForm) return;
+
+    const submitButton = document.getElementById('createPropertySubmit');
+    const message = document.getElementById('createPropertyMessage');
+
+    function showCreatePropertyMessage(text) {
+        if (!message) return;
+        message.textContent = text;
+        message.classList.add('visible');
+    }
+
+    function clearCreatePropertyMessage() {
+        if (!message) return;
+        message.textContent = '';
+        message.classList.remove('visible');
+    }
+
+    function getCreatePropertyValue(id) {
+        return document.getElementById(id)?.value.trim() || '';
+    }
+
+    function getCreatePropertyNumber(id) {
+        return Number(getCreatePropertyValue(id));
+    }
+
+    function getSelectedAmenities() {
+        return Array.from(createPropertyForm.querySelectorAll('input[name="amenities"]:checked'))
+            .map((checkbox) => checkbox.value);
+    }
+
+    function validateCreateProperty(payload) {
+        if (!payload.title || !payload.location || !payload.city || !payload.country || !payload.description?.[0]) {
+            return false;
+        }
+
+        if (!payload.type || !payload.image) {
+            return false;
+        }
+
+        return payload.price > 0 && payload.maxGuests > 0 && payload.bedrooms >= 0 && payload.bathrooms > 0;
+    }
+
+    createPropertyForm.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        clearCreatePropertyMessage();
+
+        const user = getStoredUser();
+        if (!user?.id) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        if (normalizeSessionRole(user.role) !== 'owner') {
+            window.location.href = getDashboardLink(user.role).href;
+            return;
+        }
+
+        const payload = {
+            title: getCreatePropertyValue('propertyTitle'),
+            location: getCreatePropertyValue('propertyLocation'),
+            city: getCreatePropertyValue('propertyCity'),
+            country: getCreatePropertyValue('propertyCountry'),
+            description: [getCreatePropertyValue('propertyDescription')],
+            price: getCreatePropertyNumber('propertyPrice'),
+            currency: 'MXN',
+            type: getCreatePropertyValue('propertyType'),
+            maxGuests: getCreatePropertyNumber('propertyGuests'),
+            bedrooms: getCreatePropertyNumber('propertyBedrooms'),
+            bathrooms: getCreatePropertyNumber('propertyBathrooms'),
+            amenities: getSelectedAmenities(),
+            image: getCreatePropertyValue('propertyImage'),
+            gallery: [getCreatePropertyValue('propertyImage')],
+            status: getCreatePropertyValue('propertyStatus') || 'active',
+            ownerId: user.id,
+            host: {
+                name: user.name || 'Anfitrion',
+                verified: false,
+                avatar: user.avatar || ''
+            }
+        };
+
+        if (!validateCreateProperty(payload)) {
+            showCreatePropertyMessage('Por favor completa todos los campos requeridos.');
+            return;
+        }
+
+        const originalButtonHtml = submitButton?.innerHTML;
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = 'Publicando...';
+        }
+
+        try {
+            const response = await apiFetch('/properties', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json().catch(() => null);
+            if (!response.ok || !result?.success) {
+                throw new Error(result?.message || 'Create property failed');
+            }
+
+            window.location.href = 'owner-dashboard.html';
+        } catch (error) {
+            console.error('Error publicando propiedad:', error);
+            showCreatePropertyMessage('No pudimos publicar la propiedad. Verifica los datos e intenta nuevamente.');
+        } finally {
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalButtonHtml;
+            }
+        }
+    });
 });

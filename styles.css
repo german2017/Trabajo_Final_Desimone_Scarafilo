@@ -2265,6 +2265,78 @@ img {
     font-size: 0.95rem;
 }
 
+.create-property-main {
+    background: var(--gray-50);
+}
+
+.create-property-section {
+    max-width: 920px;
+    margin: 0 auto;
+}
+
+.create-property-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.create-property-textarea {
+    min-height: 140px;
+    resize: vertical;
+}
+
+.create-property-grid-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.create-property-amenities {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--spacing-sm) var(--spacing-md);
+}
+
+.create-property-message {
+    display: none;
+    color: #B91C1C;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.create-property-message.visible {
+    display: block;
+}
+
+.create-property-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.create-property-actions .btn-primary,
+.create-property-actions .btn-secondary {
+    min-height: 46px;
+}
+
+@media (max-width: 768px) {
+    .create-property-grid-4,
+    .create-property-amenities {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .create-property-grid-4,
+    .create-property-amenities {
+        grid-template-columns: 1fr;
+    }
+
+    .create-property-actions {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+}
+
 .messages-status {
     padding: 1rem;
     color: var(--text-medium);
@@ -2478,8 +2550,20 @@ img {
 }
 
 .dashboard-main.tenant-dashboard .reservation-status.completed {
-    background: rgba(34, 197, 94, 0.12);
-    color: var(--success);
+    background: rgba(0, 102, 204, 0.12);
+    color: var(--primary-color);
+}
+
+.dashboard-main.tenant-dashboard .reservation-status.rejected {
+    background: rgba(113, 113, 142, 0.14);
+    color: var(--text-medium);
+}
+
+.dashboard-main.tenant-dashboard .reservation-status-message {
+    margin-top: 0.5rem;
+    color: var(--text-medium);
+    font-size: 0.875rem;
+    font-weight: 500;
 }
 
 .dashboard-main.tenant-dashboard .actions-section .quick-actions-grid {
@@ -2700,6 +2784,11 @@ img {
 .received-status.pending {
     background: rgba(245, 158, 11, 0.12);
     color: var(--warning);
+}
+
+.received-status.rejected {
+    background: rgba(185, 28, 28, 0.1);
+    color: #B91C1C;
 }
 
 .conversation-avatar,

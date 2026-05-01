@@ -19,5 +19,12 @@
     "email": "admin@example.com",
     "password": "admin123",
     "role": "admin"
+  },
+  {
+    "id": "1777677356613",
+    "name": "German",
+    "email": "scarafiloutn@gmail.com",
+    "password": "pepe",
+    "role": "tenant"
   }
 ]

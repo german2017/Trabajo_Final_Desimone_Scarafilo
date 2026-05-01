@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publicar propiedad - Alquileres</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-brand">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 9.5L12 4L21 9.5V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V9.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9 21V12H15V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="logo-text">Alquileres</span>
+            </a>
+            <nav class="navbar-nav">
+                <a href="index.html" class="nav-link">Explorar</a>
+                <a href="search.html" class="nav-link">Anfitriones</a>
+                <a href="assistant.html" class="nav-link">Asistente IA</a>
+            </nav>
+            <div class="navbar-actions">
+                <a href="messages.html" class="login-link">Mensajes</a>
+                <a href="owner-dashboard.html" class="login-link">Mi Panel</a>
+                <a href="create-property.html" class="register-btn active">Publicar propiedad</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard-main create-property-main">
+        <div class="container">
+            <div class="dashboard-welcome">
+                <div class="welcome-content">
+                    <h1>Publicar propiedad</h1>
+                    <p>Completa los datos principales para sumar un nuevo alojamiento a Alquileres.</p>
+                </div>
+                <div class="welcome-actions">
+                    <a href="owner-dashboard.html" class="btn-secondary">Volver al panel</a>
+                </div>
+            </div>
+
+            <section class="dashboard-section create-property-section">
+                <div class="section-header">
+                    <h2 class="section-title">Datos de la propiedad</h2>
+                </div>
+
+                <form class="create-property-form" id="createPropertyForm">
+                    <div class="form-group">
+                        <label for="propertyTitle" class="form-label">Titulo</label>
+                        <input type="text" id="propertyTitle" class="form-input" placeholder="Apartamento moderno en Polanco" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="propertyLocation" class="form-label">Ubicacion</label>
+                            <input type="text" id="propertyLocation" class="form-input" placeholder="Polanco, Ciudad de Mexico" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="propertyType" class="form-label">Tipo de propiedad</label>
+                            <select id="propertyType" class="form-select" required>
+                                <option value="">Seleccionar</option>
+                                <option value="apartment">Apartamento</option>
+                                <option value="house">Casa</option>
+                                <option value="loft">Loft</option>
+                                <option value="studio">Estudio</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="propertyCity" class="form-label">Ciudad</label>
+                            <input type="text" id="propertyCity" class="form-input" placeholder="Ciudad de Mexico" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="propertyCountry" class="form-label">Pais</label>
+                            <input type="text" id="propertyCountry" class="form-input" placeholder="Mexico" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="propertyDescription" class="form-label">Descripcion</label>
+                        <textarea id="propertyDescription" class="form-input create-property-textarea" rows="5" placeholder="Describe el espacio, la zona y lo que hace especial a tu propiedad." required></textarea>
+                    </div>
+
+                    <div class="form-row create-property-grid-4">
+                        <div class="form-group">
+                            <label for="propertyPrice" class="form-label">Precio por noche</label>
+                            <input type="number" id="propertyPrice" class="form-input" min="1" step="1" placeholder="2500" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="propertyGuests" class="form-label">Max. huespedes</label>
+                            <input type="number" id="propertyGuests" class="form-input" min="1" step="1" placeholder="4" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="propertyBedrooms" class="form-label">Dormitorios</label>
+                            <input type="number" id="propertyBedrooms" class="form-input" min="0" step="1" placeholder="2" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="propertyBathrooms" class="form-label">Banos</label>
+                            <input type="number" id="propertyBathrooms" class="form-input" min="1" step="1" placeholder="1" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <span class="form-label">Amenities</span>
+                        <div class="create-property-amenities">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="amenities" value="WiFi" class="form-checkbox">
+                                <span class="checkbox-text">WiFi</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="amenities" value="Cocina equipada" class="form-checkbox">
+                                <span class="checkbox-text">Cocina equipada</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="amenities" value="Aire acondicionado" class="form-checkbox">
+                                <span class="checkbox-text">Aire acondicionado</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="amenities" value="Lavadora" class="form-checkbox">
+                                <span class="checkbox-text">Lavadora</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="amenities" value="Estacionamiento" class="form-checkbox">
+                                <span class="checkbox-text">Estacionamiento</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="amenities" value="Smart TV" class="form-checkbox">
+                                <span class="checkbox-text">Smart TV</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="propertyImage" class="form-label">URL de imagen</label>
+                        <input type="url" id="propertyImage" class="form-input" placeholder="https://..." required>
+                    </div>
+
+                    <input type="hidden" id="propertyStatus" value="active">
+
+                    <p class="create-property-message" id="createPropertyMessage" aria-live="polite"></p>
+
+                    <div class="create-property-actions">
+                        <a href="owner-dashboard.html" class="btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn-primary" id="createPropertySubmit">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                            Publicar propiedad
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="index.html" class="navbar-brand">
+                        <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 9.5L12 4L21 9.5V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V9.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M9 21V12H15V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="logo-text">Alquileres</span>
+                    </a>
+                    <p class="footer-tagline">Encuentra tu hogar temporal ideal con verificacion y pagos seguros.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Explorar</h4>
+                    <a href="search.html">Buscar propiedades</a>
+                    <a href="search.html">Destinos populares</a>
+                    <a href="search.html">Experiencias</a>
+                </div>
+                <div class="footer-links">
+                    <h4>Anfitriones</h4>
+                    <a href="owner-dashboard.html">Panel de control</a>
+                    <a href="create-property.html">Publicar propiedad</a>
+                    <a href="assistant.html">Recursos</a>
+                </div>
+                <div class="footer-links">
+                    <h4>Soporte</h4>
+                    <a href="assistant.html">Asistente IA</a>
+                    <a href="assistant.html">Centro de ayuda</a>
+                    <a href="admin-dashboard.html">Admin</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Alquileres. Todos los derechos reservados.</p>
+                <div class="footer-legal">
+                    <a href="index.html">Terminos</a>
+                    <a href="index.html">Privacidad</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

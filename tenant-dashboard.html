@@ -289,7 +289,7 @@
 const params = new URLSearchParams(window.location.search);
 
 // If reservation params exist, update the first reservation card
-if (params.has('title')) {
+if (false && params.has('title')) {
     const firstCard = document.querySelector('.reservations-list .reservation-card');
     if (firstCard) {
         // Update property title
@@ -318,15 +318,6 @@ if (params.has('title')) {
             if (hostEl) hostEl.textContent = 'Anfitrión: ' + host;
         }
         
-        // Update status
-        const status = params.get('status');
-        if (status) {
-            const statusEl = firstCard.querySelector('.reservation-status');
-            if (statusEl) {
-                statusEl.textContent = status;
-                statusEl.className = 'reservation-status ' + (status === 'Confirmada' ? 'confirmed' : 'pending');
-            }
-        }
     }
 }
 
