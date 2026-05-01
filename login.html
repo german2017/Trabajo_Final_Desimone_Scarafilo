@@ -141,32 +141,108 @@
         </div>
     </footer>
 
+    <script src="script.js"></script>
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        const LOGIN_API_BASE_URL = 'http://localhost:4000/api';
+        const loginForm = document.getElementById('loginForm');
+        const loginButton = loginForm.querySelector('.login-btn');
+        const loginMessage = document.createElement('p');
+
+        loginMessage.style.display = 'none';
+        loginMessage.style.marginTop = '0.85rem';
+        loginMessage.style.color = '#B91C1C';
+        loginMessage.style.fontSize = '0.95rem';
+        loginMessage.style.fontWeight = '500';
+        loginForm.appendChild(loginMessage);
+
+        function normalizeRole(role) {
+            const normalized = String(role || '').toLowerCase();
+
+            if (normalized === 'huesped' || normalized === 'huésped' || normalized === 'tenant') {
+                return 'tenant';
+            }
+
+            if (normalized === 'anfitrion' || normalized === 'anfitrión' || normalized === 'owner') {
+                return 'owner';
+            }
+
+            if (normalized === 'administrador' || normalized === 'admin') {
+                return 'admin';
+            }
+
+            return normalized;
+        }
+
+        function getDashboardByRole(role) {
+            switch (normalizeRole(role)) {
+                case 'owner':
+                    return 'owner-dashboard.html';
+                case 'admin':
+                    return 'admin-dashboard.html';
+                case 'tenant':
+                default:
+                    return 'tenant-dashboard.html';
+            }
+        }
+
+        function showLoginError(message) {
+            loginMessage.textContent = message;
+            loginMessage.style.display = 'block';
+        }
+
+        function clearLoginError() {
+            loginMessage.textContent = '';
+            loginMessage.style.display = 'none';
+        }
+
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+            clearLoginError();
+
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
-            const role = document.getElementById('role').value;
-            
+            const selectedRole = document.getElementById('role').value;
+
             if (!email || !password) {
-                alert('Por favor completa todos los campos requeridos.');
+                showLoginError('No pudimos iniciar sesión. Verifica tus datos.');
                 return;
             }
-            
-            // Redirect based on role
-            switch(role) {
-                case 'huesped':
-                    window.location.href = 'tenant-dashboard.html';
-                    break;
-                case 'anfitrion':
-                    window.location.href = 'owner-dashboard.html';
-                    break;
-                case 'administrador':
-                    window.location.href = 'admin-dashboard.html';
-                    break;
-                default:
-                    window.location.href = 'tenant-dashboard.html';
+
+            loginButton.disabled = true;
+            const originalButtonText = loginButton.textContent;
+            loginButton.textContent = 'Ingresando...';
+
+            try {
+                const response = await fetch(`${LOGIN_API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password,
+                        role: selectedRole
+                    })
+                });
+
+                const result = await response.json().catch(() => null);
+
+                if (!response.ok || !result?.success || !result?.user) {
+                    throw new Error('Login failed');
+                }
+
+                const user = {
+                    ...result.user,
+                    role: normalizeRole(result.user.role || selectedRole)
+                };
+
+                localStorage.setItem('alquileres_user', JSON.stringify(user));
+                window.location.href = getDashboardByRole(user.role);
+            } catch (error) {
+                showLoginError('No pudimos iniciar sesión. Verifica tus datos.');
+            } finally {
+                loginButton.disabled = false;
+                loginButton.textContent = originalButtonText;
             }
         });
     </script>

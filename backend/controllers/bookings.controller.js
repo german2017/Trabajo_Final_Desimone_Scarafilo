@@ -28,7 +28,7 @@ async function createBooking(req, res, next) {
     const bookings = await readData(BOOKINGS_FILE);
     const newBooking = {
       id: String(Date.now()),
-      status: 'Pendiente',
+      status: booking.status || 'Pendiente',
       ...booking
     };
 

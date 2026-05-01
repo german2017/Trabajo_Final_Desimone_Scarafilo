@@ -20,6 +20,16 @@ async function login(req, res, next) {
   }
 }
 
+async function getUsers(req, res, next) {
+  try {
+    const users = await readData(USERS_FILE);
+    const safeUsers = users.map(({ password: _password, ...user }) => user);
+    res.json({ success: true, users: safeUsers });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function register(req, res, next) {
   try {
     const { name, email, password, role = 'tenant' } = req.body;
@@ -48,6 +58,7 @@ async function register(req, res, next) {
 }
 
 module.exports = {
+  getUsers,
   login,
   register
 };

@@ -160,52 +160,123 @@
         </div>
     </footer>
 
+    <script src="script.js"></script>
     <script>
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
+        const REGISTER_API_BASE_URL = 'http://localhost:4000/api';
+        const registerForm = document.getElementById('registerForm');
+        const registerButton = registerForm.querySelector('.login-btn');
+        const registerMessage = document.createElement('p');
+
+        registerMessage.style.display = 'none';
+        registerMessage.style.marginTop = '0.85rem';
+        registerMessage.style.color = '#B91C1C';
+        registerMessage.style.fontSize = '0.95rem';
+        registerMessage.style.fontWeight = '500';
+        registerForm.appendChild(registerMessage);
+
+        function normalizeRegisterRole(role) {
+            const normalized = String(role || '').toLowerCase();
+
+            if (normalized === 'huesped' || normalized === 'huésped' || normalized === 'tenant') {
+                return 'tenant';
+            }
+
+            if (normalized === 'anfitrion' || normalized === 'anfitrión' || normalized === 'owner') {
+                return 'owner';
+            }
+
+            return normalized;
+        }
+
+        function getRegisterRedirect(role) {
+            return normalizeRegisterRole(role) === 'owner' ? 'owner-dashboard.html' : 'tenant-dashboard.html';
+        }
+
+        function showRegisterMessage(message) {
+            registerMessage.textContent = message;
+            registerMessage.style.display = 'block';
+        }
+
+        function clearRegisterMessage() {
+            registerMessage.textContent = '';
+            registerMessage.style.display = 'none';
+        }
+
+        registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+            clearRegisterMessage();
+
             const nombre = document.getElementById('nombre').value.trim();
             const apellido = document.getElementById('apellido').value.trim();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
-            const role = document.getElementById('role').value;
+            const role = normalizeRegisterRole(document.getElementById('role').value);
             const terms = document.getElementById('terms').checked;
-            
-            // Validate required fields
-            if (!nombre || !apellido || !email || !password || !confirmPassword) {
-                alert('Por favor completa todos los campos requeridos.');
+
+            if (!nombre || !apellido || !email || !password || !confirmPassword || !role) {
+                showRegisterMessage('Por favor completa todos los campos requeridos.');
                 return;
             }
-            
-            // Validate password match
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !['tenant', 'owner'].includes(role)) {
+                showRegisterMessage('Por favor verifica tus datos.');
+                return;
+            }
+
             if (password !== confirmPassword) {
-                alert('Las contraseñas no coinciden. Por favor verifica.');
+                showRegisterMessage('Las contraseñas no coinciden. Por favor verifica.');
                 return;
             }
-            
-            // Validate password length
-            if (password.length < 6) {
-                alert('La contraseña debe tener al menos 6 caracteres.');
-                return;
-            }
-            
-            // Validate terms acceptance
+
             if (!terms) {
-                alert('Debes aceptar los términos y condiciones para continuar.');
+                showRegisterMessage('Debes aceptar los términos y condiciones para continuar.');
                 return;
             }
-            
-            // Redirect based on role
-            switch(role) {
-                case 'huesped':
-                    window.location.href = 'tenant-dashboard.html';
-                    break;
-                case 'anfitrion':
-                    window.location.href = 'owner-dashboard.html';
-                    break;
-                default:
-                    window.location.href = 'tenant-dashboard.html';
+
+            registerButton.disabled = true;
+            const originalButtonText = registerButton.textContent;
+            registerButton.textContent = 'Creando cuenta...';
+
+            try {
+                const response = await fetch(`${REGISTER_API_BASE_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: nombre,
+                        lastname: apellido,
+                        email,
+                        password,
+                        role
+                    })
+                });
+
+                const result = await response.json().catch(() => null);
+
+                if (!response.ok || !result?.success || !result?.user) {
+                    if (response.status === 400 || result?.message?.toLowerCase().includes('correo')) {
+                        showRegisterMessage('Ese correo ya está registrado. Intenta iniciar sesión.');
+                        return;
+                    }
+
+                    throw new Error('Register failed');
+                }
+
+                const user = {
+                    ...result.user,
+                    lastname: result.user.lastname || apellido,
+                    role: normalizeRegisterRole(result.user.role || role)
+                };
+
+                localStorage.setItem('alquileres_user', JSON.stringify(user));
+                window.location.href = getRegisterRedirect(user.role);
+            } catch (error) {
+                showRegisterMessage('No pudimos crear la cuenta.');
+            } finally {
+                registerButton.disabled = false;
+                registerButton.textContent = originalButtonText;
             }
         });
     </script>

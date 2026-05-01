@@ -73,6 +73,16 @@ img {
     display: block;
 }
 
+svg {
+    display: inline-flex;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    vertical-align: middle;
+}
+
 a {
     text-decoration: none;
     color: inherit;
@@ -573,9 +583,78 @@ input {
     box-shadow: 0 8px 24px rgba(0, 102, 204, 0.3);
 }
 
+.booking-page .payment-card svg,
+.booking-page .payment-option svg,
+.booking-page .help-link svg,
+.booking-page .btn-outline svg {
+    width: 18px;
+    height: 18px;
+}
+
+.booking-page .summary-location svg,
+.booking-page .summary-rating svg,
+.booking-page .summary-guests svg {
+    width: 16px;
+    height: 16px;
+}
+
+.success-hero .success-icon,
+.success-hero .success-icon svg {
+    width: 48px;
+    height: 48px;
+}
+
+.success-main .action-buttons a svg,
+.success-main .btn-primary svg,
+.success-main .btn-secondary svg,
+.success-main .btn-text svg {
+    width: 20px;
+    height: 20px;
+}
+
+.success-main .help-link svg,
+.success-main .trust-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.success-main .summary-location svg,
+.success-main .summary-rating svg,
+.success-main .host-badge svg {
+    width: 16px;
+    height: 16px;
+}
+
+.success-main .summary-dates .date-icon svg,
+.success-main .summary-guests svg {
+    width: 18px;
+    height: 18px;
+}
+
 .trust-icon svg {
-    width: 32px;
-    height: 32px;
+    width: 18px;
+    height: 18px;
+}
+
+.trust-icon {
+    width: 56px;
+    height: 56px;
+}
+
+.booking-page .trust-icon {
+    width: 52px;
+    height: 52px;
+}
+
+.booking-page .trust-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.trust-item:hover .trust-icon {
+    background: var(--primary-color);
+    color: var(--white);
+    box-shadow: 0 8px 24px rgba(0, 102, 204, 0.3);
 }
 
 .trust-title {
@@ -1951,7 +2030,7 @@ img {
     gap: 0.5rem;
 }
 
-..btn-primary {
+.btn-primary {
     min-height: 48px;
     padding: 0.95rem 1.5rem;
     border-radius: var(--radius-lg);
@@ -2164,6 +2243,32 @@ img {
     font-size: 1rem;
     color: var(--text-medium);
     padding: 2rem 0;
+}
+
+.owner-dashboard-status {
+    width: 100%;
+    padding: 1rem 1.1rem;
+    border-radius: var(--radius-lg);
+    background: var(--gray-50);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    color: var(--text-medium);
+    font-size: 0.95rem;
+}
+
+.admin-dashboard-status {
+    width: 100%;
+    padding: 1rem 1.1rem;
+    border-radius: var(--radius-lg);
+    background: var(--gray-50);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    color: var(--text-medium);
+    font-size: 0.95rem;
+}
+
+.messages-status {
+    padding: 1rem;
+    color: var(--text-medium);
+    font-size: 0.95rem;
 }
 
 .property-detail-status {
@@ -2585,6 +2690,7 @@ img {
 
 .history-status.completed,
 .received-status.completed,
+.received-status.confirmed,
 .reservation-status.confirmed {
     background: rgba(34, 197, 94, 0.12);
     color: var(--success);

@@ -3,6 +3,95 @@
  * Premium startup-quality interactions
  */
 
+const API_BASE_URL = "http://localhost:4000/api";
+
+async function apiFetch(path, options = {}) {
+    try {
+        const response = await fetch(`${API_BASE_URL}${path}`, options);
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const navbarActions = document.querySelector('.navbar-actions');
+    if (!navbarActions) return;
+
+    function getStoredUser() {
+        try {
+            return JSON.parse(localStorage.getItem('alquileres_user'));
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function normalizeSessionRole(role) {
+        const normalized = String(role || '').toLowerCase();
+
+        if (normalized === 'huesped' || normalized === 'huésped' || normalized === 'tenant') {
+            return 'tenant';
+        }
+
+        if (normalized === 'anfitrion' || normalized === 'anfitrión' || normalized === 'owner') {
+            return 'owner';
+        }
+
+        if (normalized === 'administrador' || normalized === 'admin') {
+            return 'admin';
+        }
+
+        return normalized;
+    }
+
+    function getDashboardLink(role) {
+        switch (normalizeSessionRole(role)) {
+            case 'owner':
+                return { href: 'owner-dashboard.html', text: 'Mi panel' };
+            case 'admin':
+                return { href: 'admin-dashboard.html', text: 'Admin' };
+            case 'tenant':
+            default:
+                return { href: 'tenant-dashboard.html', text: 'Mi cuenta' };
+        }
+    }
+
+    function isCurrentPage(href) {
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        return currentPage === href;
+    }
+
+    function renderNavbarActions() {
+        const user = getStoredUser();
+
+        if (!user?.id) {
+            navbarActions.innerHTML = `
+                <a href="login.html" class="login-link ${isCurrentPage('login.html') ? 'active' : ''}">Iniciar sesión</a>
+                <a href="register.html" class="register-btn ${isCurrentPage('register.html') ? 'active' : ''}">Registrarse</a>
+            `;
+            return;
+        }
+
+        const dashboard = getDashboardLink(user.role);
+        navbarActions.innerHTML = `
+            <a href="messages.html" class="login-link ${isCurrentPage('messages.html') ? 'active' : ''}">Mensajes</a>
+            <a href="${dashboard.href}" class="login-link ${isCurrentPage(dashboard.href) ? 'active' : ''}">${dashboard.text}</a>
+            <a href="index.html" class="login-link" data-logout-link>Cerrar sesión</a>
+        `;
+    }
+
+    renderNavbarActions();
+
+    navbarActions.addEventListener('click', function(event) {
+        const logoutLink = event.target.closest('[data-logout-link]');
+        if (!logoutLink) return;
+
+        event.preventDefault();
+        localStorage.removeItem('alquileres_user');
+        window.location.href = 'index.html';
+    });
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     // Navbar glassmorphism effect on scroll
     const navbar = document.querySelector('.navbar');
@@ -33,15 +122,21 @@ document.addEventListener('DOMContentLoaded', function() {
     searchInputs.forEach(input => {
         if (input) {
             input.addEventListener('focus', function() {
-                this.closest('.search-input-group').classList.add('focused');
+                const group = this.closest('.search-input-group');
+                if (group) {
+                    group.classList.add('focused');
+                }
             });
             input.addEventListener('blur', function() {
-                this.closest('.search-input-group').classList.remove('focused');
+                const group = this.closest('.search-input-group');
+                if (group) {
+                    group.classList.remove('focused');
+                }
             });
         }
     });
 
-    if (searchBtn) {
+    if (searchBtn && destinationInput) {
         searchBtn.addEventListener('click', function() {
             const destination = destinationInput.value.trim();
             
@@ -64,8 +159,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Get dates if provided
-            const checkin = checkinInput.value;
-            const checkout = checkoutInput.value;
+            const checkin = checkinInput ? checkinInput.value : '';
+            const checkout = checkoutInput ? checkoutInput.value : '';
             
             // Build query parameters
             const params = new URLSearchParams();
@@ -144,11 +239,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Add keyboard support for search
-    destinationInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            searchBtn.click();
-        }
-    });
+    if (destinationInput && searchBtn) {
+        destinationInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchBtn.click();
+            }
+        });
+    }
 
     console.log('Alquileres - Premium Home page initialized');
 });
@@ -388,7 +485,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setStatusMessage('Cargando propiedades...');
 
         try {
-            const response = await fetch('http://localhost:3000/api/properties');
+            const response = await apiFetch('/properties');
             if (!response.ok) {
                 throw new Error('Respuesta de red no exitosa');
             }
@@ -708,7 +805,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadProperty() {
         setLoadingState();
         try {
-            const response = await fetch(`http://localhost:3000/api/properties/${propertyId}`);
+            const response = await apiFetch(`/properties/${propertyId}`);
             if (!response.ok) {
                 if (response.status === 404) {
                     setErrorState('Propiedad no encontrada');
@@ -758,207 +855,173 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /**
- * Booking Page - Handle query parameters and display reservation summary
+ * Booking Page - Submit reservation to backend
  */
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if we're on the booking page
-    const bookingPageTitle = document.querySelector('.booking-page-title');
-    if (!bookingPageTitle) return; // Not on booking page
-    
-    // Read query parameters from URL
-    const params = new URLSearchParams(window.location.search);
-    const propertyId = params.get('id');
-    const propertyTitle = params.get('title');
-    const checkin = params.get('checkin');
-    const checkout = params.get('checkout');
-    const guests = params.get('guests');
-    const nights = params.get('nights');
-    const nightlyPrice = parseInt(params.get('price')) || 1850;
-    const total = parseInt(params.get('total')) || 14375;
-    
-    // Default values
-    const cleaningFee = 500;
-    const serviceFee = Math.round((nightlyPrice * (parseInt(nights) || 5)) * 0.10);
-    const deposit = 3700;
-    
-    // Helper function to format date for display
-    function formatDateFull(dateStr) {
-        if (!dateStr) return '20 de abril de 2026';
-        const date = new Date(dateStr + 'T00:00:00');
-        const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-        const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-        return `${days[date.getDay()]}, ${date.getDate()} de ${months[date.getMonth()]} de ${date.getFullYear()}`;
-    }
-    
-    // Helper function to format price
-    function formatPrice(num) {
-        return '$' + (num || 0).toLocaleString('es-MX');
-    }
-    
-    // Update property summary title
-    const summaryTitle = document.querySelector('.summary-details h3');
-    if (summaryTitle && propertyTitle) {
-        summaryTitle.textContent = decodeURIComponent(propertyTitle);
-    }
-    
-    // Update trip dates
-    const dateValues = document.querySelectorAll('.date-block .date-value');
-    if (dateValues.length >= 2) {
-        if (checkin) {
-            dateValues[0].textContent = formatDateFull(checkin);
-        }
-        if (checkout) {
-            dateValues[1].textContent = formatDateFull(checkout);
-        }
-    }
-    
-    // Update guests
-    const guestsValue = document.querySelector('.trip-guests .date-value');
-    if (guestsValue && guests) {
-        guestsValue.textContent = `${guests} huésped${parseInt(guests) > 1 ? 'es' : ''}`;
-    }
-    
-    // Update pricing in the price box
-    const priceDetails = document.querySelector('.price-details');
-    const priceTotal = document.querySelector('.price-total');
-    
-    const numNights = parseInt(nights) || 5;
-    const subtotal = nightlyPrice * numNights;
-    
-    if (priceDetails) {
-        const priceRows = priceDetails.querySelectorAll('.price-row');
-        if (priceRows[0]) {
-            priceRows[0].innerHTML = `<span class="price-label">${formatPrice(nightlyPrice)} x ${numNights} noches</span><span class="price-value">${formatPrice(subtotal)}</span>`;
-        }
-        if (priceRows[1]) {
-            priceRows[1].innerHTML = `<span class="price-label">Tarifa de limpieza</span><span class="price-value">${formatPrice(cleaningFee)}</span>`;
-        }
-        if (priceRows[2]) {
-            priceRows[2].innerHTML = `<span class="price-label">Tarifa de servicio</span><span class="price-value">${formatPrice(serviceFee)}</span>`;
-        }
-    }
-    if (priceTotal) {
-        const totalAmount = priceTotal.querySelector('.total-amount');
-        if (totalAmount) {
-            totalAmount.textContent = formatPrice(total);
-        }
-    }
-    
-    console.log('Alquileres - Booking page initialized:', {
-        propertyId: propertyId || 'default',
-        propertyTitle: propertyTitle || 'default',
-        checkin: checkin || 'default',
-        checkout: checkout || 'default',
-        guests: guests || 'default',
-        nights: nights || 'default',
-        nightlyPrice: nightlyPrice,
-        total: total
-    });
-    
-    // Handle confirm and pay button
     const confirmPayBtn = document.getElementById('confirm-pay-btn');
-    
-    if (confirmPayBtn) {
-        confirmPayBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Get form fields
-            const firstName = document.getElementById('firstName');
-            const lastName = document.getElementById('lastName');
-            const email = document.getElementById('email');
-            const cardName = document.getElementById('cardName');
-            const cardNumber = document.getElementById('cardNumber');
-            
-            // Validation
-            let errors = [];
-            
-            // Validate name (first + last)
-            if (!firstName || !firstName.value.trim()) {
-                errors.push('Nombre');
-            }
-            if (!lastName || !lastName.value.trim()) {
-                errors.push('Apellido');
-            }
-            
-            // Validate email
-            if (!email || !email.value.trim()) {
-                errors.push('Correo electrónico');
-            } else if (!email.value.includes('@') || !email.value.includes('.')) {
-                alert('Por favor, ingresa un correo electrónico válido.');
-                email.focus();
-                return;
-            }
-            
-            // Validate card name
-            if (!cardName || !cardName.value.trim()) {
-                errors.push('Nombre en la tarjeta');
-            }
-            
-            // Validate card number (basic check - at least 13 digits)
-            if (!cardNumber || !cardNumber.value.trim()) {
-                errors.push('Número de tarjeta');
-            } else {
-                // Remove spaces and check if it's numeric
-                const cardDigits = cardNumber.value.replace(/\s/g, '');
-                if (cardDigits.length < 13 || !/^\d+$/.test(cardDigits)) {
-                    alert('Por favor, ingresa un número de tarjeta válido (13-19 dígitos).');
-                    cardNumber.focus();
-                    return;
-                }
-            }
-            
-            // Show error if any required fields are empty
-            if (errors.length > 0) {
-                alert('Por favor, completa los siguientes campos requeridos: ' + errors.join(', '));
-                return;
-            }
-            
-            // Generate mock reservation code
-            const year = new Date().getFullYear();
-            const randomNum = Math.floor(Math.random() * 90000) + 10000;
-            const reservationCode = `ALQ-${year}-${randomNum}`;
-            
-            // Get property details from the page
-            const propertyTitleEl = document.querySelector('.summary-details h3');
-            const propertyTitle = propertyTitleEl ? propertyTitleEl.textContent : 'Apartamento moderno en Polanco';
-            
-            const locationEl = document.querySelector('.summary-location');
-            const location = locationEl ? locationEl.textContent : 'Polanco, Ciudad de México';
-            
-            // Get dates from the page
-            const dateValues = document.querySelectorAll('.date-block .date-value');
-            const checkinDate = dateValues[0] ? dateValues[0].textContent : '';
-            const checkoutDate = dateValues[1] ? dateValues[1].textContent : '';
-            
-            // Get guests
-            const guestsEl = document.querySelector('.trip-guests .date-value');
-            const guests = guestsEl ? guestsEl.textContent : '2 huéspedes';
-            
-            // Get total
-            const totalEl = document.querySelector('.price-total .total-amount');
-            const total = totalEl ? totalEl.textContent.replace(/[$,]/g, '') : '14375';
-            
-            // Get host name
-            const hostEl = document.querySelector('.host-summary h4');
-            const hostName = hostEl ? hostEl.textContent.replace('Anfitrión: ', '') : 'María González';
-            
-            // Build query parameters for booking-success.html
-            const params = new URLSearchParams();
-            params.set('id', propertyId || '1');
-            params.set('title', encodeURIComponent(propertyTitle));
-            params.set('location', encodeURIComponent(location));
-            params.set('checkin', checkin || '2026-04-20');
-            params.set('checkout', checkout || '2026-04-25');
-            params.set('guests', guests || '2');
-            params.set('nights', nights || '5');
-            params.set('total', total);
-            params.set('host', encodeURIComponent(hostName));
-            params.set('code', reservationCode);
-            
-            // Redirect to booking-success.html
-            window.location.href = 'booking-success.html?' + params.toString();
-        });
+    if (!confirmPayBtn) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const propertyId = params.get('propertyId') || params.get('id') || 'property-1';
+    const tenantId = 'tenant-1';
+    const ownerId = params.get('ownerId') || 'owner-1';
+    const title = params.get('title') || 'Apartamento moderno en Polanco';
+    const location = params.get('location') || 'Polanco, Ciudad de México';
+    const host = params.get('host') || 'María González';
+    const checkin = params.get('checkin') || '2026-04-20';
+    const checkout = params.get('checkout') || '2026-04-25';
+    const guests = params.get('guests') || '2';
+    const nights = params.get('nights') || '5';
+    const total = params.get('total') || '14375';
+    const price = Number(params.get('price')) || (Number(total) / Number(nights)) || 1850;
+
+    const propertySummaryTitle = document.querySelector('.booking-property-summary .summary-details h3');
+    const propertySummaryLocation = document.querySelector('.booking-property-summary .summary-location');
+    const priceLabel = document.querySelector('.price-details .price-row .price-label');
+    const priceValue = document.querySelector('.price-details .price-row .price-value');
+    const totalAmount = document.querySelector('.price-total .total-amount');
+    const confirmationMessage = document.createElement('div');
+    confirmationMessage.style.color = '#b91c1c';
+    confirmationMessage.style.margin = '1rem 0';
+    confirmationMessage.style.fontWeight = '500';
+    confirmationMessage.style.display = 'none';
+    confirmPayBtn.parentNode.insertBefore(confirmationMessage, confirmPayBtn);
+
+    if (propertySummaryTitle) {
+        propertySummaryTitle.textContent = title;
     }
+    if (propertySummaryLocation) {
+        propertySummaryLocation.textContent = location;
+    }
+    if (priceLabel) {
+        priceLabel.textContent = `${formatPrice(price)} x ${nights} noches`;
+    }
+    if (priceValue) {
+        priceValue.textContent = formatPrice(price * Number(nights));
+    }
+    if (totalAmount) {
+        totalAmount.textContent = formatPrice(total);
+    }
+
+    function formatPrice(value) {
+        const number = Number(value || 0);
+        return '$' + number.toLocaleString('es-MX');
+    }
+
+    function showBookingError(message) {
+        confirmationMessage.textContent = message;
+        confirmationMessage.style.display = 'block';
+    }
+
+    function clearBookingError() {
+        confirmationMessage.textContent = '';
+        confirmationMessage.style.display = 'none';
+    }
+
+    function validateFields() {
+        const fields = [
+            { el: document.getElementById('cardName'), label: 'Nombre en la tarjeta' },
+            { el: document.getElementById('cardNumber'), label: 'Número de tarjeta' },
+            { el: document.getElementById('email'), label: 'Correo electrónico' }
+        ];
+
+        for (const field of fields) {
+            if (!field.el || !field.el.value.trim()) {
+                alert(`Por favor completa el campo: ${field.label}`);
+                field.el?.focus();
+                return false;
+            }
+        }
+
+        const emailInput = document.getElementById('email');
+        if (emailInput && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) {
+            alert('Ingresa un correo electrónico válido.');
+            emailInput.focus();
+            return false;
+        }
+
+        return true;
+    }
+
+    async function submitBooking() {
+        if (!validateFields()) {
+            return;
+        }
+
+        confirmPayBtn.disabled = true;
+        const originalText = confirmPayBtn.textContent;
+        confirmPayBtn.textContent = 'Procesando...';
+
+        const bookingPayload = {
+            propertyId,
+            tenantId,
+            ownerId,
+            title,
+            location,
+            host,
+            checkin,
+            checkout,
+            guests: Number(guests),
+            nights: Number(nights),
+            total: Number(total),
+            status: 'Confirmada'
+        };
+
+        try {
+            const url = `${API_BASE_URL}/bookings`;
+            console.log('Booking payload:', bookingPayload);
+            console.log('Sending booking POST to:', url);
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(bookingPayload)
+            });
+
+            console.log('Booking response status:', response.status, 'ok:', response.ok);
+
+            const responseBody = await response.json().catch((jsonError) => {
+                console.warn('Booking response JSON parse failed:', jsonError);
+                return null;
+            });
+            console.log('Booking response body:', responseBody);
+
+            if (!response.ok) {
+                console.error('Booking POST failed:', response.status, responseBody);
+                alert('No pudimos confirmar la reserva. Intenta nuevamente.');
+                return;
+            }
+
+            const bookingId = responseBody?.booking?.id || responseBody?.id || responseBody?.bookingId;
+            const confirmationCode = responseBody?.confirmationCode || responseBody?.code || (bookingId ? `ALQ-${bookingId}` : null);
+
+            if (!bookingId) {
+                console.error('Booking POST returned no booking id:', responseBody);
+                alert('No pudimos confirmar la reserva. Intenta nuevamente.');
+                return;
+            }
+
+            const params = new URLSearchParams();
+            params.set('id', bookingId);
+            if (confirmationCode) params.set('code', confirmationCode);
+            window.location.href = `booking-success.html?${params.toString()}`;
+        } catch (error) {
+            console.error('Error al enviar la reserva:', error);
+            alert('No pudimos confirmar la reserva. Intenta nuevamente.');
+        } finally {
+            confirmPayBtn.disabled = false;
+            confirmPayBtn.textContent = originalText;
+        }
+    }
+
+    confirmPayBtn.addEventListener('click', function(event) {
+        event.preventDefault();
+        console.log('Confirmar y pagar clickeado');
+        submitBooking();
+    });
+
+    console.log('Listener attached to #confirm-pay-btn');
 });
 
 /**
@@ -1090,4 +1153,874 @@ document.addEventListener('DOMContentLoaded', function() {
         hostName: hostName || 'default',
         reservationCode: reservationCode || 'default'
     });
+});
+
+/**
+ * Tenant Dashboard - Load upcoming reservations from backend
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    const reservationsList = document.querySelector('.dashboard-main.tenant-dashboard .reservations-list');
+    if (!reservationsList) return;
+
+    const initialReservationsHtml = reservationsList.innerHTML;
+    const countEl = document.getElementById('tenant-bookings-count');
+    const loadingMessage = 'Cargando tus reservaciones...';
+    const emptyMessage = 'Todavía no tienes reservaciones';
+    const errorMessage = 'No se pudieron cargar tus reservaciones';
+
+    function formatDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString + 'T00:00:00');
+        const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        return `${date.getDate()} ${months[date.getMonth()]}`;
+    }
+
+    function normalizeTenantPropertyId(propertyId) {
+        if (!propertyId) return '';
+        return String(propertyId).replace(/^property-/, '');
+    }
+
+    function updateTenantBookingsCount(bookings) {
+        if (!countEl) return;
+        countEl.textContent = `(${bookings.length})`;
+        countEl.hidden = false;
+    }
+
+    function hideTenantBookingsCount() {
+        if (!countEl) return;
+        countEl.hidden = true;
+    }
+
+    function buildStatusCard(message) {
+        return `
+            <div style="grid-column: 1 / -1; padding: 1rem 1.1rem; border-radius: var(--radius-lg); background: var(--gray-50); border: 1px solid rgba(0,0,0,0.06); color: var(--text-medium); font-size: 0.95rem;">
+                ${message}
+            </div>
+        `;
+    }
+
+    async function fetchPropertyDetail(propertyId) {
+        if (!propertyId) return null;
+        const idsToTry = [...new Set([propertyId, normalizeTenantPropertyId(propertyId)].filter(Boolean))];
+
+        try {
+            for (const id of idsToTry) {
+                const response = await apiFetch(`/properties/${encodeURIComponent(id)}`);
+                if (!response.ok) continue;
+
+                const result = await response.json();
+                return result.property || result.data || result;
+            }
+
+            return null;
+        } catch (error) {
+            console.warn('Error fetching property detail for', propertyId, error);
+            return null;
+        }
+    }
+
+    function normalizeBooking(booking, propertyData) {
+        const propertyId = booking.propertyId || booking.property?.id || '';
+        const property = Object.assign({}, booking.property || {}, propertyData || {});
+        const ownerName = booking.owner || booking.ownerName || booking.host || property.owner?.name || property.owner || booking.ownerId || '';
+        const title = booking.title || property.title || `Propiedad ${propertyId || ''}`.trim();
+        const image = booking.image || property.image || property.picture || property.thumbnail || 'https://via.placeholder.com/320x220?text=Propiedad';
+        const location = property.location || booking.location || '';
+        const checkin = booking.checkin || '';
+        const checkout = booking.checkout || '';
+        const status = booking.status || 'Pendiente';
+
+        return {
+            id: booking.id || '',
+            propertyId,
+            title,
+            image,
+            location,
+            checkin,
+            checkout,
+            status,
+            owner: ownerName
+        };
+    }
+
+    function renderReservationCard(item) {
+        const statusClass = item.status.toLowerCase().includes('confirm') ? 'confirmed' : item.status.toLowerCase().includes('pend') ? 'pending' : '';
+        const detailsHref = item.propertyId ? `property-detail.html?id=${encodeURIComponent(item.propertyId)}` : 'property-detail.html';
+        const messagesHref = `messages.html?host=${encodeURIComponent(item.owner || '')}&property=${encodeURIComponent(item.title || '')}&status=${encodeURIComponent(item.status)}&checkin=${encodeURIComponent(item.checkin)}&checkout=${encodeURIComponent(item.checkout)}`;
+        const ownerHtml = item.owner ? `<div class="reservation-host"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=30&h=30&fit=crop" alt="${item.owner}"><span>Anfitrión: ${item.owner}</span></div>` : '';
+
+        return `
+            <article class="reservation-card">
+                <div class="reservation-image">
+                    <img src="${item.image}" alt="${item.title}">
+                </div>
+                <div class="reservation-details">
+                    <h3>${item.title}</h3>
+                    <div class="reservation-meta">
+                        <span class="reservation-dates">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            ${formatDate(item.checkin)} - ${formatDate(item.checkout)}
+                        </span>
+                        <span class="reservation-status ${statusClass}">${item.status}</span>
+                    </div>
+                    ${ownerHtml}
+                </div>
+                <div class="reservation-actions">
+                    <a href="${detailsHref}" class="btn-outline-sm">Ver propiedad</a>
+                    <a href="${messagesHref}" class="btn-outline-sm">Mensajes</a>
+                </div>
+            </article>
+        `;
+    }
+
+    async function loadReservations() {
+        reservationsList.innerHTML = buildStatusCard(loadingMessage);
+
+        try {
+            const response = await apiFetch('/bookings/user/tenant-1');
+            if (!response.ok) {
+                throw new Error('No se pudo obtener reservaciones');
+            }
+
+            const result = await response.json();
+            const bookings = Array.isArray(result.bookings)
+                ? result.bookings
+                : Array.isArray(result.data)
+                    ? result.data
+                    : Array.isArray(result)
+                        ? result
+                        : [];
+            updateTenantBookingsCount(bookings);
+
+            if (bookings.length === 0) {
+                reservationsList.innerHTML = buildStatusCard(emptyMessage);
+                return;
+            }
+
+            const hydratedBookings = await Promise.all(bookings.map(async (booking) => {
+                const propertyId = booking.propertyId || booking.property?.id;
+                let propertyData = booking.property || null;
+                if (propertyId && (!propertyData || !propertyData.title || !propertyData.image || !propertyData.location || !propertyData.owner)) {
+                    propertyData = await fetchPropertyDetail(propertyId) || propertyData;
+                }
+                return normalizeBooking(booking, propertyData);
+            }));
+
+            reservationsList.innerHTML = hydratedBookings.map(renderReservationCard).join('');
+        } catch (error) {
+            console.error('Error cargando reservaciones:', error);
+            hideTenantBookingsCount();
+            reservationsList.innerHTML = buildStatusCard(errorMessage) + initialReservationsHtml;
+        }
+    }
+
+    loadReservations();
+});
+
+/**
+ * Owner Dashboard - Load real owner properties, reservations and stats
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    const ownerDashboard = document.querySelector('.dashboard-main.owner-dashboard');
+    if (!ownerDashboard) return;
+
+    const OWNER_ID = 'owner-1';
+    const listingsGrid = ownerDashboard.querySelector('.listings-grid');
+    const reservationsList = ownerDashboard.querySelector('.reservations-received-list');
+    const activePropertiesStat = ownerDashboard.querySelector('[data-owner-stat="active-properties"]');
+    const reservationsCountStat = ownerDashboard.querySelector('[data-owner-stat="reservations-count"]');
+    const estimatedIncomeStat = ownerDashboard.querySelector('[data-owner-stat="estimated-income"]');
+    const averageRatingStat = ownerDashboard.querySelector('[data-owner-stat="average-rating"]');
+    const fallbackImage = 'https://via.placeholder.com/320x220?text=Propiedad';
+
+    function escapeOwnerHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function normalizeOwnerPropertyId(propertyId) {
+        if (!propertyId) return '';
+        return String(propertyId).replace(/^property-/, '');
+    }
+
+    function getOwnerArray(result, key) {
+        if (Array.isArray(result?.[key])) return result[key];
+        if (Array.isArray(result?.data)) return result.data;
+        if (Array.isArray(result)) return result;
+        return [];
+    }
+
+    function formatOwnerDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString + 'T00:00:00');
+        const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+    }
+
+    function formatOwnerMoney(value) {
+        return '$' + Number(value || 0).toLocaleString('es-MX');
+    }
+
+    function getOwnerNights(booking) {
+        if (booking.nights) return Number(booking.nights);
+        if (!booking.checkin || !booking.checkout) return 0;
+        const start = new Date(booking.checkin + 'T00:00:00');
+        const end = new Date(booking.checkout + 'T00:00:00');
+        const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+        return nights > 0 ? nights : 0;
+    }
+
+    function buildOwnerStatus(message) {
+        return `<div class="owner-dashboard-status">${escapeOwnerHtml(message)}</div>`;
+    }
+
+    async function fetchOwnerJson(path) {
+        const response = await apiFetch(path);
+        if (!response.ok) throw new Error(`No se pudo cargar ${path}`);
+        return response.json();
+    }
+
+    async function fetchOwnerProperty(propertyId) {
+        if (!propertyId) return null;
+        const idsToTry = [...new Set([propertyId, normalizeOwnerPropertyId(propertyId)].filter(Boolean))];
+
+        for (const id of idsToTry) {
+            try {
+                const result = await fetchOwnerJson(`/properties/${encodeURIComponent(id)}`);
+                return result.property || result.data || result;
+            } catch (error) {
+                // Try next id form.
+            }
+        }
+
+        return null;
+    }
+
+    function propertyMatchesOwnerBooking(property, booking) {
+        return property.id === booking.propertyId || property.id === normalizeOwnerPropertyId(booking.propertyId);
+    }
+
+    function getOwnerBookingTotal(booking, property) {
+        if (booking.total) return Number(booking.total);
+        const nights = getOwnerNights(booking);
+        return nights && property?.price ? nights * Number(property.price) : 0;
+    }
+
+    function getOwnerGuestName(booking) {
+        return booking.guest || booking.guestName || booking.tenantName || booking.tenant?.name || booking.tenantId || 'Huésped';
+    }
+
+    function renderOwnerProperty(property, ownerBookings) {
+        const propertyBookings = ownerBookings.filter((booking) => propertyMatchesOwnerBooking(property, booking));
+        const statusText = property.status === 'available' ? 'Activa' : property.status || 'Activa';
+        const statusClass = property.status === 'available' ? 'active' : 'paused';
+        const priceText = property.price ? `${formatOwnerMoney(property.price)}/noche` : 'Precio no disponible';
+
+        return `
+            <article class="listing-card">
+                <div class="listing-image">
+                    <img src="${escapeOwnerHtml(property.image || fallbackImage)}" alt="${escapeOwnerHtml(property.title)}">
+                    <span class="listing-status ${statusClass}">${escapeOwnerHtml(statusText)}</span>
+                </div>
+                <div class="listing-content">
+                    <h3>${escapeOwnerHtml(property.title)}</h3>
+                    <p class="property-location">${escapeOwnerHtml(property.location || '')}</p>
+                    <div class="listing-stats">
+                        <span>${escapeOwnerHtml(priceText)}</span>
+                        <span>${propertyBookings.length} reservaciones</span>
+                    </div>
+                    <div class="listing-actions">
+                        <a href="property-detail.html?id=${encodeURIComponent(property.id)}" class="btn-outline-sm">Ver</a>
+                    </div>
+                </div>
+            </article>
+        `;
+    }
+
+    function renderOwnerReservation(booking, property) {
+        const title = booking.title || property?.title || `Propiedad ${booking.propertyId || ''}`.trim();
+        const total = getOwnerBookingTotal(booking, property);
+        const status = booking.status || 'Pendiente';
+        const isPending = status.toLowerCase().includes('pend');
+        const statusClass = status.toLowerCase().includes('confirm') ? 'confirmed' : isPending ? 'pending' : '';
+        const messagesParams = new URLSearchParams();
+        messagesParams.set('property', title);
+        messagesParams.set('status', status);
+        messagesParams.set('checkin', booking.checkin || '');
+        messagesParams.set('checkout', booking.checkout || '');
+        const pendingActions = isPending ? `
+                    <button class="btn-outline-sm" data-owner-action="confirm" data-booking-id="${escapeOwnerHtml(booking.id)}">Confirmar</button>
+                    <button class="btn-outline-sm" data-owner-action="reject" data-booking-id="${escapeOwnerHtml(booking.id)}">Rechazar</button>` : '';
+
+        return `
+            <div class="received-item" data-booking-id="${escapeOwnerHtml(booking.id)}">
+                <img src="${escapeOwnerHtml(property?.image || fallbackImage)}" alt="${escapeOwnerHtml(title)}" class="guest-avatar">
+                <div class="received-details">
+                    <h4>${escapeOwnerHtml(getOwnerGuestName(booking))}</h4>
+                    <p>${escapeOwnerHtml(title)}</p>
+                    <span class="received-dates">${escapeOwnerHtml(formatOwnerDate(booking.checkin))} - ${escapeOwnerHtml(formatOwnerDate(booking.checkout))}</span>
+                    <span class="received-dates">Total: ${escapeOwnerHtml(formatOwnerMoney(total))}</span>
+                </div>
+                <div class="received-status ${statusClass}">${escapeOwnerHtml(status)}</div>
+                <div class="received-actions">
+                    <a href="messages.html?${messagesParams.toString()}" class="btn-outline-sm">Mensajes</a>
+                    ${pendingActions}
+                </div>
+            </div>
+        `;
+    }
+
+    function updateOwnerStats(ownerProperties, ownerBookings, propertyById) {
+        const estimatedIncome = ownerBookings.reduce((sum, booking) => {
+            const property = propertyById.get(normalizeOwnerPropertyId(booking.propertyId));
+            return sum + getOwnerBookingTotal(booking, property);
+        }, 0);
+        const ratings = ownerProperties
+            .map((property) => Number(property.rating))
+            .filter((rating) => Number.isFinite(rating));
+        const averageRating = ratings.length
+            ? (ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length).toFixed(1)
+            : 'N/A';
+
+        if (activePropertiesStat) activePropertiesStat.textContent = ownerProperties.length;
+        if (reservationsCountStat) reservationsCountStat.textContent = ownerBookings.length;
+        if (estimatedIncomeStat) estimatedIncomeStat.textContent = formatOwnerMoney(estimatedIncome);
+        if (averageRatingStat) averageRatingStat.textContent = averageRating;
+    }
+
+    async function updateOwnerBookingStatus(bookingId, status) {
+        const response = await apiFetch(`/bookings/${encodeURIComponent(bookingId)}/status`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status })
+        });
+
+        if (!response.ok) throw new Error('No se pudo actualizar la reserva');
+        return response.json();
+    }
+
+    async function loadOwnerDashboard() {
+        if (listingsGrid) listingsGrid.innerHTML = buildOwnerStatus('Cargando propiedades...');
+        if (reservationsList) reservationsList.innerHTML = buildOwnerStatus('Cargando reservaciones...');
+
+        try {
+            const [propertiesResult, bookingsResult] = await Promise.all([
+                fetchOwnerJson('/properties'),
+                fetchOwnerJson('/bookings')
+            ]);
+            const properties = getOwnerArray(propertiesResult, 'properties');
+            const bookings = getOwnerArray(bookingsResult, 'bookings');
+            const ownerProperties = properties.filter((property) => property.ownerId === OWNER_ID);
+            const ownerBookings = bookings.filter((booking) => booking.ownerId === OWNER_ID);
+            const propertyById = new Map(properties.map((property) => [normalizeOwnerPropertyId(property.id), property]));
+            const hydratedReservations = await Promise.all(ownerBookings.map(async (booking) => {
+                const property = await fetchOwnerProperty(booking.propertyId) || propertyById.get(normalizeOwnerPropertyId(booking.propertyId));
+                if (property?.id) propertyById.set(normalizeOwnerPropertyId(property.id), property);
+                return { booking, property };
+            }));
+
+            updateOwnerStats(ownerProperties, ownerBookings, propertyById);
+
+            if (listingsGrid) {
+                listingsGrid.innerHTML = ownerProperties.length
+                    ? ownerProperties.map((property) => renderOwnerProperty(property, ownerBookings)).join('')
+                    : buildOwnerStatus('Todavía no tienes propiedades');
+            }
+
+            if (reservationsList) {
+                reservationsList.innerHTML = hydratedReservations.length
+                    ? hydratedReservations.map(({ booking, property }) => renderOwnerReservation(booking, property)).join('')
+                    : buildOwnerStatus('Todavía no tienes reservaciones');
+            }
+        } catch (error) {
+            console.error('Error cargando panel de anfitrión:', error);
+            if (listingsGrid) listingsGrid.innerHTML = buildOwnerStatus('No se pudieron cargar tus propiedades');
+            if (reservationsList) reservationsList.innerHTML = buildOwnerStatus('No se pudieron cargar tus reservaciones');
+        }
+    }
+
+    if (reservationsList) {
+        reservationsList.addEventListener('click', async function(event) {
+            const actionButton = event.target.closest('[data-owner-action]');
+            if (!actionButton) return;
+
+            const bookingId = actionButton.dataset.bookingId;
+            const nextStatus = actionButton.dataset.ownerAction === 'confirm' ? 'Confirmada' : 'Rechazada';
+            actionButton.disabled = true;
+
+            try {
+                await updateOwnerBookingStatus(bookingId, nextStatus);
+                await loadOwnerDashboard();
+            } catch (error) {
+                console.error('Error actualizando reserva:', error);
+                actionButton.disabled = false;
+                alert('No se pudo actualizar la reserva. Intenta nuevamente.');
+            }
+        });
+    }
+
+    loadOwnerDashboard();
+});
+
+/**
+ * Messages Page - Load conversations and chat thread from backend
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    const messagesMain = document.querySelector('.messages-main');
+    if (!messagesMain) return;
+
+    const conversationsList = messagesMain.querySelector('.conversations-list');
+    const chatHeader = messagesMain.querySelector('.chat-header');
+    const chatAvatar = messagesMain.querySelector('.chat-avatar');
+    const chatTitle = messagesMain.querySelector('.chat-user-info h3');
+    const chatStatus = messagesMain.querySelector('.chat-status');
+    const propertyContext = messagesMain.querySelector('.chat-property-context');
+    const contextImage = messagesMain.querySelector('.chat-property-context img');
+    const contextTitle = messagesMain.querySelector('.context-details h4');
+    const contextText = messagesMain.querySelector('.context-details span');
+    const contextLink = messagesMain.querySelector('.context-link');
+    const chatMessages = messagesMain.querySelector('.chat-messages');
+    const messageInput = messagesMain.querySelector('.message-input');
+    const sendButton = messagesMain.querySelector('.send-btn');
+    const fallbackAvatar = 'https://via.placeholder.com/80x80?text=U';
+    const knownUsers = {
+        'tenant-1': { name: 'Juan Pérez', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop' },
+        'owner-1': { name: 'María González', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop' },
+        'admin-1': { name: 'Administrador', avatar: fallbackAvatar }
+    };
+    let currentUser = null;
+    let activeConversationId = null;
+
+    function getLoggedUser() {
+        try {
+            return JSON.parse(localStorage.getItem('alquileres_user'));
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function escapeMessageHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function getArrayPayload(result, key) {
+        if (Array.isArray(result?.[key])) return result[key];
+        if (Array.isArray(result?.data)) return result.data;
+        if (Array.isArray(result)) return result;
+        return [];
+    }
+
+    function getOtherParticipant(conversation) {
+        const otherId = (conversation.participants || []).find((participantId) => participantId !== currentUser.id);
+        return {
+            id: otherId || '',
+            name: conversation.userName || conversation.name || conversation.participantName || knownUsers[otherId]?.name || otherId || 'Conversación',
+            avatar: conversation.avatar || conversation.userAvatar || knownUsers[otherId]?.avatar || fallbackAvatar
+        };
+    }
+
+    function formatMessageTime(timestamp) {
+        if (!timestamp) return '';
+        const date = new Date(timestamp);
+        if (Number.isNaN(date.getTime())) return '';
+        return date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function getLastMessage(conversation) {
+        const messages = Array.isArray(conversation.messages) ? conversation.messages : [];
+        return messages[messages.length - 1] || null;
+    }
+
+    function buildMessagesStatus(message) {
+        return `<div class="messages-status">${escapeMessageHtml(message)}</div>`;
+    }
+
+    async function fetchMessagesJson(path, options) {
+        const response = await apiFetch(path, options);
+        if (!response.ok) throw new Error(`No se pudo cargar ${path}`);
+        return response.json();
+    }
+
+    function renderConversations(conversations) {
+        conversationsList.innerHTML = conversations.map((conversation) => {
+            const other = getOtherParticipant(conversation);
+            const lastMessage = getLastMessage(conversation);
+            const unread = Number(conversation.unread || conversation.unreadCount || 0);
+            const isActive = conversation.id === activeConversationId;
+
+            return `
+                <div class="conversation-item ${isActive ? 'active' : ''}" data-conversation-id="${escapeMessageHtml(conversation.id)}">
+                    <img src="${escapeMessageHtml(other.avatar)}" alt="${escapeMessageHtml(other.name)}" class="conversation-avatar">
+                    <div class="conversation-info">
+                        <div class="conversation-header">
+                            <h4>${escapeMessageHtml(other.name)}</h4>
+                            <span class="conversation-time">${escapeMessageHtml(formatMessageTime(lastMessage?.timestamp))}</span>
+                        </div>
+                        <div class="conversation-preview-row">
+                            <p class="conversation-preview">${escapeMessageHtml(lastMessage?.text || conversation.title || 'Sin mensajes todavía')}</p>
+                            ${unread ? `<span class="unread-badge">${unread}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderChatHeader(conversation) {
+        const other = getOtherParticipant(conversation);
+        if (chatAvatar) {
+            chatAvatar.src = other.avatar;
+            chatAvatar.alt = other.name;
+        }
+        if (chatTitle) chatTitle.textContent = other.name;
+        if (chatStatus) chatStatus.textContent = conversation.subtitle || conversation.roleLabel || 'Conversación activa';
+        if (propertyContext) propertyContext.style.display = '';
+        if (contextImage) {
+            contextImage.src = conversation.propertyImage || contextImage.src;
+            contextImage.alt = conversation.title || 'Propiedad';
+        }
+        if (contextTitle) contextTitle.textContent = conversation.title || 'Consulta de reserva';
+        if (contextText) contextText.textContent = conversation.status || 'Mensajes de la conversación';
+        if (contextLink) contextLink.href = conversation.propertyId ? `property-detail.html?id=${encodeURIComponent(conversation.propertyId)}` : 'property-detail.html';
+        if (chatHeader) chatHeader.style.display = '';
+    }
+
+    function renderChatMessages(conversation) {
+        const other = getOtherParticipant(conversation);
+        const messages = Array.isArray(conversation.messages) ? conversation.messages : [];
+
+        if (!messages.length) {
+            chatMessages.innerHTML = buildMessagesStatus('Todavía no hay mensajes en esta conversación.');
+            return;
+        }
+
+        chatMessages.innerHTML = messages.map((message) => {
+            const isOutgoing = message.senderId === currentUser.id;
+
+            if (isOutgoing) {
+                return `
+                    <div class="message outgoing">
+                        <div class="message-bubble">
+                            <p>${escapeMessageHtml(message.text)}</p>
+                            <span class="message-time">${escapeMessageHtml(formatMessageTime(message.timestamp))}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="message incoming">
+                    <img src="${escapeMessageHtml(other.avatar)}" alt="${escapeMessageHtml(other.name)}" class="message-avatar">
+                    <div class="message-bubble">
+                        <p>${escapeMessageHtml(message.text)}</p>
+                        <span class="message-time">${escapeMessageHtml(formatMessageTime(message.timestamp))}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    async function loadConversation(conversationId) {
+        activeConversationId = conversationId;
+        chatMessages.innerHTML = buildMessagesStatus('Cargando chat...');
+
+        try {
+            const result = await fetchMessagesJson(`/messages/${encodeURIComponent(conversationId)}`);
+            const conversation = result.conversation || result.data || result;
+            renderChatHeader(conversation);
+            renderChatMessages(conversation);
+
+            conversationsList.querySelectorAll('.conversation-item').forEach((item) => item.classList.remove('active'));
+            const activeItem = Array.from(conversationsList.querySelectorAll('.conversation-item'))
+                .find((item) => item.dataset.conversationId === conversationId);
+            if (activeItem) activeItem.classList.add('active');
+        } catch (error) {
+            console.error('Error cargando conversación:', error);
+            chatMessages.innerHTML = buildMessagesStatus('No pudimos cargar esta conversación.');
+        }
+    }
+
+    async function loadConversations() {
+        conversationsList.innerHTML = buildMessagesStatus('Cargando conversaciones...');
+        chatMessages.innerHTML = buildMessagesStatus('Selecciona una conversación para empezar.');
+
+        try {
+            const result = await fetchMessagesJson(`/messages/conversations/${encodeURIComponent(currentUser.id)}`);
+            const conversations = getArrayPayload(result, 'conversations');
+
+            if (!conversations.length) {
+                conversationsList.innerHTML = buildMessagesStatus('Todavía no tienes conversaciones.');
+                chatMessages.innerHTML = buildMessagesStatus('No hay mensajes para mostrar.');
+                return;
+            }
+
+            activeConversationId = activeConversationId || conversations[0].id;
+            renderConversations(conversations);
+            await loadConversation(activeConversationId);
+        } catch (error) {
+            console.error('Error cargando conversaciones:', error);
+            conversationsList.innerHTML = buildMessagesStatus('No pudimos cargar tus conversaciones.');
+            chatMessages.innerHTML = buildMessagesStatus('No pudimos cargar tus mensajes.');
+        }
+    }
+
+    async function sendMessage() {
+        const text = messageInput.value.trim();
+        if (!text || !activeConversationId) return;
+
+        sendButton.disabled = true;
+
+        try {
+            await fetchMessagesJson(`/messages/${encodeURIComponent(activeConversationId)}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    senderId: currentUser.id,
+                    text
+                })
+            });
+            messageInput.value = '';
+            await loadConversation(activeConversationId);
+            await loadConversations();
+        } catch (error) {
+            console.error('Error enviando mensaje:', error);
+            chatMessages.insertAdjacentHTML('beforeend', buildMessagesStatus('No pudimos enviar el mensaje.'));
+        } finally {
+            sendButton.disabled = false;
+        }
+    }
+
+    currentUser = getLoggedUser();
+    if (!currentUser?.id) {
+        conversationsList.innerHTML = buildMessagesStatus('Inicia sesión para ver tus conversaciones.');
+        chatMessages.innerHTML = buildMessagesStatus('No hay usuario activo.');
+        return;
+    }
+
+    conversationsList.addEventListener('click', function(event) {
+        const item = event.target.closest('.conversation-item');
+        if (!item?.dataset.conversationId) return;
+        loadConversation(item.dataset.conversationId);
+    });
+
+    sendButton.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+
+    loadConversations();
+});
+
+/**
+ * Admin Dashboard - Load users, properties, bookings and stats from backend
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    const adminDashboard = document.querySelector('.dashboard-main.admin-dashboard');
+    if (!adminDashboard) return;
+
+    const usersList = adminDashboard.querySelector('.verification-list');
+    const propertiesList = adminDashboard.querySelector('.flagged-list');
+    const bookingsList = adminDashboard.querySelector('.disputes-list');
+    const totalUsersStat = adminDashboard.querySelector('[data-admin-stat="total-users"]');
+    const totalPropertiesStat = adminDashboard.querySelector('[data-admin-stat="total-properties"]');
+    const totalBookingsStat = adminDashboard.querySelector('[data-admin-stat="total-bookings"]');
+    const estimatedRevenueStat = adminDashboard.querySelector('[data-admin-stat="estimated-revenue"]');
+    const usersCount = adminDashboard.querySelector('[data-admin-count="users"]');
+    const propertiesCount = adminDashboard.querySelector('[data-admin-count="properties"]');
+    const bookingsCount = adminDashboard.querySelector('[data-admin-count="bookings"]');
+    const fallbackAvatar = 'https://via.placeholder.com/80x80?text=U';
+    const fallbackImage = 'https://via.placeholder.com/160x120?text=Propiedad';
+
+    function escapeAdminHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function getAdminArray(result, key) {
+        if (Array.isArray(result?.[key])) return result[key];
+        if (Array.isArray(result?.data)) return result.data;
+        if (Array.isArray(result)) return result;
+        return [];
+    }
+
+    function normalizeAdminPropertyId(propertyId) {
+        if (!propertyId) return '';
+        return String(propertyId).replace(/^property-/, '');
+    }
+
+    function formatAdminMoney(value) {
+        return '$' + Number(value || 0).toLocaleString('es-MX');
+    }
+
+    function formatAdminDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString + 'T00:00:00');
+        if (Number.isNaN(date.getTime())) return dateString;
+        const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+    }
+
+    function getAdminNights(booking) {
+        if (booking.nights) return Number(booking.nights);
+        if (!booking.checkin || !booking.checkout) return 0;
+        const start = new Date(booking.checkin + 'T00:00:00');
+        const end = new Date(booking.checkout + 'T00:00:00');
+        const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+        return nights > 0 ? nights : 0;
+    }
+
+    function buildAdminStatus(message) {
+        return `<div class="admin-dashboard-status">${escapeAdminHtml(message)}</div>`;
+    }
+
+    async function fetchAdminJson(path) {
+        const response = await apiFetch(path);
+        if (!response.ok) throw new Error(`No se pudo cargar ${path}`);
+        return response.json();
+    }
+
+    function renderAdminUser(user) {
+        const status = user.status || 'Activo';
+        return `
+            <div class="verification-item">
+                <img src="${escapeAdminHtml(user.avatar || fallbackAvatar)}" alt="${escapeAdminHtml(user.name)}" class="verification-avatar">
+                <div class="verification-details">
+                    <h4>${escapeAdminHtml(user.name || 'Usuario')}</h4>
+                    <p>${escapeAdminHtml(user.email || 'Sin email')} · ${escapeAdminHtml(user.role || 'sin rol')}</p>
+                </div>
+                <div class="verification-actions">
+                    <span class="user-status active">${escapeAdminHtml(status)}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderAdminProperty(property, usersById) {
+        const owner = usersById.get(property.ownerId);
+        const status = property.status || 'Sin estado';
+        return `
+            <div class="flagged-item">
+                <img src="${escapeAdminHtml(property.image || fallbackImage)}" alt="${escapeAdminHtml(property.title)}" class="flagged-image">
+                <div class="flagged-details">
+                    <h4>${escapeAdminHtml(property.title || 'Propiedad')}</h4>
+                    <p>Dueño: ${escapeAdminHtml(owner?.name || property.ownerId || 'Sin dueño')}</p>
+                    <span class="flagged-reason">${escapeAdminHtml(property.location || 'Sin ubicación')} · ${escapeAdminHtml(formatAdminMoney(property.price))}/noche · ${escapeAdminHtml(status)}</span>
+                </div>
+                <div class="flagged-actions">
+                    <a href="property-detail.html?id=${encodeURIComponent(property.id)}" class="btn-outline-sm">Ver</a>
+                </div>
+            </div>
+        `;
+    }
+
+    function getAdminBookingTotal(booking, property) {
+        if (booking.total) return Number(booking.total);
+        const nights = getAdminNights(booking);
+        return nights && property?.price ? nights * Number(property.price) : 0;
+    }
+
+    function renderAdminBooking(booking, propertiesById, usersById) {
+        const property = propertiesById.get(normalizeAdminPropertyId(booking.propertyId));
+        const tenant = usersById.get(booking.tenantId);
+        const title = booking.title || property?.title || booking.propertyId || 'Propiedad';
+        const total = getAdminBookingTotal(booking, property);
+        const status = booking.status || 'Pendiente';
+        const statusClass = status.toLowerCase().includes('confirm') ? 'urgent' : 'pending';
+        return `
+            <div class="dispute-item">
+                <div class="dispute-header">
+                    <span class="dispute-id">${escapeAdminHtml(booking.id || 'Reserva')}</span>
+                    <span class="dispute-status ${statusClass}">${escapeAdminHtml(status)}</span>
+                </div>
+                <div class="dispute-parties">
+                    <span class="party">${escapeAdminHtml(title)}</span>
+                    <span class="vs">·</span>
+                    <span class="party">${escapeAdminHtml(tenant?.name || booking.tenantId || 'Huésped')}</span>
+                </div>
+                <p class="dispute-issue">${escapeAdminHtml(formatAdminDate(booking.checkin))} - ${escapeAdminHtml(formatAdminDate(booking.checkout))} · Total: ${escapeAdminHtml(formatAdminMoney(total))}</p>
+            </div>
+        `;
+    }
+
+    function updateAdminStats(users, properties, bookings, propertiesById) {
+        const estimatedRevenue = bookings.reduce((sum, booking) => {
+            const property = propertiesById.get(normalizeAdminPropertyId(booking.propertyId));
+            return sum + getAdminBookingTotal(booking, property);
+        }, 0);
+
+        if (totalUsersStat) totalUsersStat.textContent = users.length;
+        if (totalPropertiesStat) totalPropertiesStat.textContent = properties.length;
+        if (totalBookingsStat) totalBookingsStat.textContent = bookings.length;
+        if (estimatedRevenueStat) estimatedRevenueStat.textContent = formatAdminMoney(estimatedRevenue);
+        if (usersCount) usersCount.textContent = `${users.length} usuarios`;
+        if (propertiesCount) propertiesCount.textContent = `${properties.length} propiedades`;
+        if (bookingsCount) bookingsCount.textContent = `${bookings.length} reservas`;
+    }
+
+    async function loadAdminDashboard() {
+        if (usersList) usersList.innerHTML = buildAdminStatus('Cargando usuarios...');
+        if (propertiesList) propertiesList.innerHTML = buildAdminStatus('Cargando propiedades...');
+        if (bookingsList) bookingsList.innerHTML = buildAdminStatus('Cargando reservas...');
+
+        try {
+            const [usersResult, propertiesResult, bookingsResult] = await Promise.all([
+                fetchAdminJson('/auth/users'),
+                fetchAdminJson('/properties'),
+                fetchAdminJson('/bookings')
+            ]);
+            const users = getAdminArray(usersResult, 'users');
+            const properties = getAdminArray(propertiesResult, 'properties');
+            const bookings = getAdminArray(bookingsResult, 'bookings');
+            const usersById = new Map(users.map((user) => [user.id, user]));
+            const propertiesById = new Map(properties.map((property) => [normalizeAdminPropertyId(property.id), property]));
+
+            updateAdminStats(users, properties, bookings, propertiesById);
+
+            if (usersList) {
+                usersList.innerHTML = users.length
+                    ? users.map(renderAdminUser).join('')
+                    : buildAdminStatus('No hay usuarios para mostrar.');
+            }
+
+            if (propertiesList) {
+                propertiesList.innerHTML = properties.length
+                    ? properties.map((property) => renderAdminProperty(property, usersById)).join('')
+                    : buildAdminStatus('No hay propiedades para mostrar.');
+            }
+
+            if (bookingsList) {
+                bookingsList.innerHTML = bookings.length
+                    ? bookings.map((booking) => renderAdminBooking(booking, propertiesById, usersById)).join('')
+                    : buildAdminStatus('No hay reservas para mostrar.');
+            }
+        } catch (error) {
+            console.error('Error cargando panel admin:', error);
+            if (usersList) usersList.innerHTML = buildAdminStatus('No se pudieron cargar los usuarios.');
+            if (propertiesList) propertiesList.innerHTML = buildAdminStatus('No se pudieron cargar las propiedades.');
+            if (bookingsList) bookingsList.innerHTML = buildAdminStatus('No se pudieron cargar las reservas.');
+        }
+    }
+
+    loadAdminDashboard();
 });

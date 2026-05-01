@@ -16,5 +16,35 @@
     "checkin": "2026-05-15",
     "checkout": "2026-05-20",
     "status": "Pendiente"
+  },
+  {
+    "id": "1777667081281",
+    "status": "Confirmada",
+    "propertyId": "property-1",
+    "tenantId": "tenant-1",
+    "ownerId": "owner-1",
+    "title": "Apartamento moderno en Polanco",
+    "location": "Polanco, Ciudad de México",
+    "host": "María González",
+    "checkin": "2026-04-20",
+    "checkout": "2026-04-25",
+    "guests": 2,
+    "nights": 5,
+    "total": 14375
+  },
+  {
+    "id": "1777671761436",
+    "status": "Confirmada",
+    "propertyId": "property-1",
+    "tenantId": "tenant-1",
+    "ownerId": "owner-1",
+    "title": "Apartamento moderno en Polanco",
+    "location": "Polanco, Ciudad de México",
+    "host": "María González",
+    "checkin": "2026-04-20",
+    "checkout": "2026-04-25",
+    "guests": 2,
+    "nights": 5,
+    "total": 14375
   }
 ]
