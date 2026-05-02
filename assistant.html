@@ -163,63 +163,77 @@
 
                 <!-- Right Column - Recommendations -->
                 <div class="assistant-recommendations">
-                    <h3>Recomendaciones para ti</h3>
-                    
-                    <div class="recommendation-section">
-                        <h4>Populares en Polanco</h4>
-                        <div class="recommendation-list">
-                            <a href="property-detail.html" class="recommendation-item">
-                                <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=80&h=60&fit=crop" alt="Apartamento">
-                                <div class="recommendation-info">
-                                    <h5>Apartamento moderno</h5>
-                                    <span>$1,850/noche · ⭐ 4.9</span>
-                                </div>
-                            </a>
-                            <a href="property-detail.html" class="recommendation-item">
-                                <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=80&h=60&fit=crop" alt="Casa">
-                                <div class="recommendation-info">
-                                    <h5>Casa espaciosa</h5>
-                                    <span>$2,100/noche · ⭐ 4.8</span>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
+                    <h3>Recomendador inteligente</h3>
 
-                    <div class="recommendation-section">
-                        <h4>Ayuda rápida</h4>
-                        <div class="help-links">
-                            <a href="assistant.html" class="help-link-item">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                                <span>Cómo funciona la reserva</span>
-                            </a>
-                            <a href="assistant.html" class="help-link-item">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                <span>Política de cancelación</span>
-                            </a>
-                            <a href="assistant.html" class="help-link-item">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-                                <span>Métodos de pago</span>
-                            </a>
-                            <a href="assistant.html" class="help-link-item">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                                <span>Contactar soporte</span>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="recommendation-section">
-                        <h4>Próximas reservaciones</h4>
-                        <div class="upcoming-reservations">
-                            <div class="reservation-mini">
-                                <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=50&h=50&fit=crop" alt="Apartamento">
-                                <div class="reservation-mini-info">
-                                    <h5>Polanco</h5>
-                                    <span>20 - 25 abril</span>
-                                </div>
-                                <a href="property-detail.html" class="reservation-mini-link">Ver</a>
+                    <form id="recommendationForm" class="recommendation-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="recommendationBudget">Presupuesto máximo por noche</label>
+                                <input type="number" id="recommendationBudget" class="form-input" min="1" placeholder="Ej: 3000" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="recommendationGuests">Huéspedes</label>
+                                <input type="number" id="recommendationGuests" class="form-input" min="1" value="2" required>
                             </div>
                         </div>
-                    </div>
+
+                        <div class="form-group">
+                            <label for="recommendationZone">Zona preferida</label>
+                            <input type="text" id="recommendationZone" class="form-input" placeholder="Polanco, Roma Norte, Centro...">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="recommendationType">Tipo de alojamiento</label>
+                                <select id="recommendationType" class="form-select">
+                                    <option value="any">Cualquiera</option>
+                                    <option value="apartamento">Apartamento</option>
+                                    <option value="casa">Casa</option>
+                                    <option value="loft">Loft</option>
+                                    <option value="estudio">Estudio</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="recommendationReason">Motivo del viaje</label>
+                                <select id="recommendationReason" class="form-select">
+                                    <option value="familia">Familia</option>
+                                    <option value="trabajo">Trabajo</option>
+                                    <option value="pareja">Pareja</option>
+                                    <option value="turismo">Turismo</option>
+                                    <option value="descanso">Descanso</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <fieldset class="recommendation-services">
+                            <legend>Servicios deseados</legend>
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="form-checkbox" name="recommendationServices" value="wifi">
+                                <span class="checkbox-text">WiFi</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="form-checkbox" name="recommendationServices" value="pileta">
+                                <span class="checkbox-text">Pileta</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="form-checkbox" name="recommendationServices" value="cochera">
+                                <span class="checkbox-text">Cochera</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="form-checkbox" name="recommendationServices" value="cocina">
+                                <span class="checkbox-text">Cocina</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="form-checkbox" name="recommendationServices" value="aire-acondicionado">
+                                <span class="checkbox-text">Aire acondicionado</span>
+                            </label>
+                        </fieldset>
+
+                        <button type="submit" class="btn-primary">Buscar recomendaciones</button>
+                    </form>
+
+                    <div id="recommendationStatus" class="recommendation-status" aria-live="polite"></div>
+                    <div id="recommendationResults" class="recommendation-results"></div>
                 </div>
             </div>
         </div>

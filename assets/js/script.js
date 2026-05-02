@@ -2236,3 +2236,354 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+/**
+ * Assistant recommendation engine
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    const recommendationForm = document.getElementById('recommendationForm');
+    const resultsContainer = document.getElementById('recommendationResults');
+    const statusBox = document.getElementById('recommendationStatus');
+    if (!recommendationForm || !resultsContainer || !statusBox) return;
+
+    const LAST_RECOMMENDATION_KEY = 'rentia_last_recommendation';
+    const mockRecommendationProperties = [
+        {
+            id: '1',
+            title: 'Apartamento moderno en Polanco',
+            location: 'Polanco, Ciudad de Mexico',
+            ownerId: 'owner-1',
+            price: 2500,
+            currency: 'MXN',
+            image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop',
+            rating: 4.8,
+            status: 'available',
+            type: 'apartamento',
+            maxGuests: 4,
+            amenities: ['WiFi de alta velocidad', 'Smart TV', 'Cocina equipada', 'Aire acondicionado', 'Lavadora', 'Estacionamiento'],
+            host: { name: 'Maria Gonzalez' }
+        },
+        {
+            id: '2',
+            title: 'Casa espaciosa en Roma Norte',
+            location: 'Roma Norte, Ciudad de Mexico',
+            ownerId: 'owner-2',
+            price: 3200,
+            currency: 'MXN',
+            image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop',
+            rating: 4.7,
+            status: 'available',
+            type: 'casa',
+            maxGuests: 6,
+            amenities: ['Jardin privado', 'Cocina equipada', 'WiFi', 'Lavadora', 'Estacionamiento'],
+            host: { name: 'Javier Rodriguez' }
+        },
+        {
+            id: '3',
+            title: 'Loft centrico en Centro Historico',
+            location: 'Centro Historico, Ciudad de Mexico',
+            ownerId: 'owner-3',
+            price: 2200,
+            currency: 'MXN',
+            image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop',
+            rating: 4.9,
+            status: 'available',
+            type: 'loft',
+            maxGuests: 2,
+            amenities: ['WiFi', 'Smart TV', 'Cocina equipada', 'Lavadora', 'Aire acondicionado'],
+            host: { name: 'Lucia Mendez' }
+        }
+    ];
+    let availableProperties = mockRecommendationProperties;
+
+    function escapeRecommendationHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function normalizeRecommendationText(value) {
+        return String(value || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .trim();
+    }
+
+    function formatRecommendationPrice(value) {
+        return '$' + Number(value || 0).toLocaleString('es-MX');
+    }
+
+    function getPropertyPrice(property) {
+        return Number(property.price || property.pricePerNight || property.nightlyPrice || 0);
+    }
+
+    function getPropertyCapacity(property) {
+        const explicitCapacity = Number(property.maxGuests || property.capacity || property.guests || property.sleeps || 0);
+        if (explicitCapacity > 0) return explicitCapacity;
+
+        const type = getPropertyType(property);
+        if (type === 'casa') return 6;
+        if (type === 'apartamento') return 4;
+        if (type === 'loft' || type === 'estudio') return 2;
+        return 2;
+    }
+
+    function getPropertyType(property) {
+        const explicitType = normalizeRecommendationText(property.type);
+        const searchableText = normalizeRecommendationText(`${property.title || ''} ${property.description || ''}`);
+
+        if (explicitType.includes('casa') || searchableText.includes('casa')) return 'casa';
+        if (explicitType.includes('loft') || searchableText.includes('loft')) return 'loft';
+        if (explicitType.includes('estudio') || searchableText.includes('estudio')) return 'estudio';
+        if (explicitType.includes('apart') || searchableText.includes('apart')) return 'apartamento';
+        return explicitType || 'apartamento';
+    }
+
+    function getPropertyServices(property) {
+        const amenitiesText = normalizeRecommendationText((property.amenities || []).join(' '));
+        const services = new Set();
+
+        if (amenitiesText.includes('wifi')) services.add('wifi');
+        if (amenitiesText.includes('pileta') || amenitiesText.includes('piscina') || amenitiesText.includes('alberca')) services.add('pileta');
+        if (amenitiesText.includes('cochera') || amenitiesText.includes('estacionamiento') || amenitiesText.includes('parking')) services.add('cochera');
+        if (amenitiesText.includes('cocina')) services.add('cocina');
+        if (amenitiesText.includes('aire')) services.add('aire-acondicionado');
+
+        return services;
+    }
+
+    function propertyMatchesTripReason(property, reason) {
+        const type = getPropertyType(property);
+        const capacity = getPropertyCapacity(property);
+        const services = getPropertyServices(property);
+        const text = normalizeRecommendationText(`${property.title || ''} ${property.location || ''} ${(property.amenities || []).join(' ')}`);
+        const rating = Number(property.rating || 0);
+
+        if (reason === 'familia') return capacity >= 4 || type === 'casa' || services.has('cocina') || services.has('cochera');
+        if (reason === 'trabajo') return services.has('wifi') || services.has('aire-acondicionado') || text.includes('polanco') || text.includes('centro');
+        if (reason === 'pareja') return capacity <= 2 || type === 'loft' || type === 'estudio';
+        if (reason === 'turismo') return text.includes('centro') || text.includes('polanco') || text.includes('roma') || rating >= 4.7;
+        if (reason === 'descanso') return type === 'casa' || text.includes('jardin') || text.includes('tranquil') || services.has('aire-acondicionado');
+        return false;
+    }
+
+    function getUserPreferences() {
+        return {
+            budget: Number(document.getElementById('recommendationBudget')?.value || 0),
+            guests: Number(document.getElementById('recommendationGuests')?.value || 1),
+            zone: document.getElementById('recommendationZone')?.value.trim() || '',
+            type: document.getElementById('recommendationType')?.value || 'any',
+            reason: document.getElementById('recommendationReason')?.value || '',
+            services: Array.from(document.querySelectorAll('input[name="recommendationServices"]:checked')).map(input => input.value)
+        };
+    }
+
+    function calculateRecommendationScore(property, preferences) {
+        const status = normalizeRecommendationText(property.status);
+        if (status && !['available', 'active', 'disponible'].includes(status)) {
+            return null;
+        }
+
+        const price = getPropertyPrice(property);
+        const capacity = getPropertyCapacity(property);
+        const propertyType = getPropertyType(property);
+        const propertyServices = getPropertyServices(property);
+        const locationText = normalizeRecommendationText(property.location || property.city || '');
+        const preferredZone = normalizeRecommendationText(preferences.zone);
+        const matchedServices = preferences.services.filter(service => propertyServices.has(service));
+        const reasonMatch = propertyMatchesTripReason(property, preferences.reason);
+        const inBudget = preferences.budget > 0 && price <= preferences.budget;
+        const overBudget = preferences.budget > 0 && price > preferences.budget;
+        const zoneMatch = Boolean(preferredZone && locationText.includes(preferredZone));
+        const capacityMatch = capacity >= preferences.guests;
+        const typeMatch = preferences.type === 'any' || propertyType === preferences.type;
+
+        let score = 0;
+        if (inBudget) score += 30;
+        if (zoneMatch) score += 20;
+        if (capacityMatch) score += 20;
+        if (typeMatch && preferences.type !== 'any') score += 15;
+        score += matchedServices.length * 10;
+        if (reasonMatch) score += 10;
+        if (overBudget) score -= 20;
+
+        return {
+            score,
+            price,
+            capacity,
+            propertyType,
+            matchedServices,
+            inBudget,
+            overBudget,
+            zoneMatch,
+            capacityMatch,
+            typeMatch,
+            reasonMatch
+        };
+    }
+
+    function generateRecommendationExplanation(property, preferences, scoreData) {
+        const reasons = [];
+
+        if (scoreData.inBudget) reasons.push(`entra en tu presupuesto de ${formatRecommendationPrice(preferences.budget)} por noche`);
+        if (scoreData.zoneMatch) reasons.push(`coincide con tu zona preferida (${preferences.zone})`);
+        if (scoreData.capacityMatch) reasons.push(`tiene capacidad estimada para ${scoreData.capacity} huésped(es)`);
+        if (scoreData.typeMatch && preferences.type !== 'any') reasons.push(`coincide con el tipo ${preferences.type}`);
+        if (scoreData.matchedServices.length) reasons.push(`incluye ${scoreData.matchedServices.join(', ')}`);
+        if (scoreData.reasonMatch) reasons.push(`encaja con un viaje de ${preferences.reason}`);
+        if (scoreData.overBudget) reasons.push('supera el presupuesto, pero compensa con otras coincidencias');
+
+        if (!reasons.length) return 'Aparece como alternativa disponible, aunque tiene pocas coincidencias con tus preferencias.';
+        return `Recomendada porque ${reasons.join('; ')}.`;
+    }
+
+    function getRecommendationTags(preferences, scoreData) {
+        const tags = [];
+        if (scoreData.inBudget) tags.push('Mejor opción por presupuesto');
+        if (preferences.reason === 'familia' && scoreData.reasonMatch) tags.push('Ideal para familias');
+        if (scoreData.zoneMatch) tags.push('Coincide con tu zona preferida');
+        if (scoreData.inBudget && scoreData.capacityMatch) tags.push('Buena relación precio-capacidad');
+        if (preferences.reason === 'trabajo' && scoreData.reasonMatch) tags.push('Práctica para trabajo');
+        if (preferences.reason === 'pareja' && scoreData.reasonMatch) tags.push('Pensada para parejas');
+        return tags.slice(0, 4);
+    }
+
+    function buildBookingUrl(property) {
+        const params = new URLSearchParams({
+            propertyId: property.id,
+            id: property.id,
+            title: property.title || '',
+            location: property.location || '',
+            price: String(getPropertyPrice(property)),
+            ownerId: property.ownerId || '',
+            host: property.host?.name || ''
+        });
+        return `booking.html?${params.toString()}`;
+    }
+
+    function setRecommendationStatus(message) {
+        statusBox.textContent = message || '';
+        statusBox.classList.toggle('visible', Boolean(message));
+    }
+
+    function renderRecommendations(recommendations) {
+        const visibleRecommendations = recommendations.slice(0, 3);
+
+        if (!visibleRecommendations.length) {
+            resultsContainer.innerHTML = '<div class="recommendation-status visible">No encontramos propiedades disponibles que coincidan con tus preferencias.</div>';
+            return;
+        }
+
+        resultsContainer.innerHTML = visibleRecommendations.map(({ property, scoreData, explanation, tags }) => {
+            const propertyId = encodeURIComponent(property.id);
+            const title = escapeRecommendationHtml(property.title || 'Propiedad recomendada');
+            const location = escapeRecommendationHtml(property.location || property.city || 'Ubicación no disponible');
+            const image = escapeRecommendationHtml(property.image || 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&h=420&fit=crop');
+            const tagHtml = tags.map(tag => `<span class="recommendation-tag">${escapeRecommendationHtml(tag)}</span>`).join('');
+
+            return `
+                <article class="recommendation-result-card" data-recommendation-score="${scoreData.score}">
+                    <img src="${image}" alt="${title}" class="recommendation-result-image">
+                    <div class="recommendation-result-content">
+                        <div class="recommendation-result-header">
+                            <div>
+                                <h4>${title}</h4>
+                                <div class="recommendation-result-meta">
+                                    <span>${location}</span>
+                                    <span>${formatRecommendationPrice(scoreData.price)} por noche · hasta ${scoreData.capacity} huésped(es)</span>
+                                </div>
+                            </div>
+                            <span class="recommendation-score">Puntaje ${scoreData.score}</span>
+                        </div>
+                        <div class="recommendation-tags">${tagHtml || '<span class="recommendation-tag">Disponible</span>'}</div>
+                        <p class="recommendation-explanation">${escapeRecommendationHtml(explanation)}</p>
+                        <div class="recommendation-actions">
+                            <a href="property-detail.html?id=${propertyId}" class="btn-secondary">Ver detalle</a>
+                            <a href="${escapeRecommendationHtml(buildBookingUrl(property))}" class="btn-primary">Reservar</a>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }).join('');
+    }
+
+    function saveLastRecommendation(preferences, recommendations) {
+        const savedRecommendations = recommendations.slice(0, 3).map(({ property, scoreData, explanation, tags }) => ({
+            propertyId: property.id,
+            title: property.title,
+            score: scoreData.score,
+            explanation,
+            tags
+        }));
+
+        localStorage.setItem(LAST_RECOMMENDATION_KEY, JSON.stringify({
+            preferences,
+            recommendations: savedRecommendations,
+            savedAt: new Date().toISOString()
+        }));
+    }
+
+    function prefillLastPreferences() {
+        const saved = JSON.parse(localStorage.getItem(LAST_RECOMMENDATION_KEY) || 'null');
+        if (!saved?.preferences) return;
+
+        document.getElementById('recommendationBudget').value = saved.preferences.budget || '';
+        document.getElementById('recommendationGuests').value = saved.preferences.guests || 1;
+        document.getElementById('recommendationZone').value = saved.preferences.zone || '';
+        document.getElementById('recommendationType').value = saved.preferences.type || 'any';
+        document.getElementById('recommendationReason').value = saved.preferences.reason || 'familia';
+        document.querySelectorAll('input[name="recommendationServices"]').forEach(input => {
+            input.checked = (saved.preferences.services || []).includes(input.value);
+        });
+        setRecommendationStatus('Última búsqueda cargada. Puedes ajustarla y volver a recomendar.');
+    }
+
+    function loadRecommendationProperties() {
+        // El recomendador debe funcionar en Netlify y en archivos estaticos, sin backend local.
+        availableProperties = mockRecommendationProperties;
+        recommendationForm.dataset.loaded = 'true';
+        setRecommendationStatus('');
+    }
+
+    recommendationForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const preferences = getUserPreferences();
+        if (!preferences.budget || preferences.budget <= 0 || !preferences.guests || preferences.guests <= 0) {
+            setRecommendationStatus('Completá presupuesto y cantidad de huéspedes para recomendar.');
+            return;
+        }
+
+        if (!availableProperties.length) {
+            setRecommendationStatus('Todavía no hay propiedades cargadas para recomendar.');
+            return;
+        }
+
+        const recommendations = availableProperties
+            .map(property => {
+                const scoreData = calculateRecommendationScore(property, preferences);
+                if (!scoreData) return null;
+
+                return {
+                    property,
+                    scoreData,
+                    explanation: generateRecommendationExplanation(property, preferences, scoreData),
+                    tags: getRecommendationTags(preferences, scoreData)
+                };
+            })
+            .filter(Boolean)
+            .filter(recommendation => recommendation.scoreData.score > 0)
+            .sort((a, b) => b.scoreData.score - a.scoreData.score);
+
+        setRecommendationStatus(recommendations.length ? '' : 'No hay coincidencias claras para esas preferencias.');
+        renderRecommendations(recommendations);
+        saveLastRecommendation(preferences, recommendations);
+    });
+
+    prefillLastPreferences();
+    loadRecommendationProperties();
+});
