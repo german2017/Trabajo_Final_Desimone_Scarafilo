@@ -38,5 +38,12 @@
     "role": "tenant",
     "status": "Activo",
     "createdAt": "2026-04-18"
+  },
+  {
+    "id": "1777833722571",
+    "name": "Franco",
+    "email": "franco@gmail.com",
+    "password": "fran",
+    "role": "tenant"
   }
 ]

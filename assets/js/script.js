@@ -3,9 +3,13 @@
  * Premium startup-quality interactions
  */
 
-const API_BASE_URL = "http://localhost:4000/api";
+const API_BASE_URL = "";
 
 async function apiFetch(path, options = {}) {
+    if (!API_BASE_URL) {
+        throw new Error('Backend deshabilitado en modo frontend');
+    }
+
     try {
         const response = await fetch(`${API_BASE_URL}${path}`, options);
         return response;
@@ -168,6 +172,93 @@ function getRentiaMockPropertyById(propertyId) {
 }
 
 const RENTIA_PROPERTIES_KEY = 'rentia_properties';
+const RENTIA_USERS_KEY = 'rentia_users';
+const RENTIA_DEMO_USERS = [
+    {
+        id: 'tenant-1',
+        name: 'Juan',
+        lastname: 'Perez',
+        email: 'juan.perez@example.com',
+        password: 'password123',
+        role: 'tenant',
+        createdAt: '2026-03-15T00:00:00.000Z'
+    },
+    {
+        id: 'owner-1',
+        name: 'Maria',
+        lastname: 'Gonzalez',
+        email: 'maria.gonzalez@example.com',
+        password: 'password123',
+        role: 'owner',
+        createdAt: '2026-02-20T00:00:00.000Z'
+    },
+    {
+        id: 'admin-1',
+        name: 'Administrador',
+        lastname: 'RentIA',
+        email: 'admin@example.com',
+        password: 'admin123',
+        role: 'admin',
+        createdAt: '2026-01-10T00:00:00.000Z'
+    }
+];
+
+function getRentiaStoredUsers() {
+    try {
+        const stored = JSON.parse(localStorage.getItem(RENTIA_USERS_KEY) || '[]');
+        return Array.isArray(stored) ? stored : [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function saveRentiaStoredUsers(users) {
+    localStorage.setItem(RENTIA_USERS_KEY, JSON.stringify(users));
+}
+
+function seedRentiaDemoUsers() {
+    if (getRentiaStoredUsers().length) return;
+    saveRentiaStoredUsers(RENTIA_DEMO_USERS);
+}
+
+function getRentiaUsers() {
+    seedRentiaDemoUsers();
+    return getRentiaStoredUsers();
+}
+
+function saveRentiaCurrentUser(user) {
+    localStorage.setItem(RENTIA_SESSION_KEY, JSON.stringify(user));
+}
+
+function createRentiaUser(payload) {
+    const users = getRentiaUsers();
+    const email = String(payload.email || '').trim().toLowerCase();
+    if (!email) throw new Error('Email requerido');
+    if (users.some((user) => String(user.email || '').toLowerCase() === email)) {
+        throw new Error('EMAIL_EXISTS');
+    }
+
+    const user = {
+        id: `user-${Date.now()}`,
+        name: payload.name,
+        lastname: payload.lastname || '',
+        email,
+        password: payload.password,
+        role: normalizeSessionRole(payload.role),
+        createdAt: new Date().toISOString()
+    };
+
+    saveRentiaStoredUsers([...users, user]);
+    return user;
+}
+
+function findRentiaUserByCredentials(email, password) {
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    return getRentiaUsers().find((user) => (
+        String(user.email || '').toLowerCase() === normalizedEmail &&
+        String(user.password || '') === String(password || '')
+    )) || null;
+}
 
 function normalizeRentiaPropertyId(propertyId) {
     return String(propertyId || '').replace(/^property-/, '').trim();
@@ -211,6 +302,11 @@ function getRentiaStoredProperties() {
 
 function saveRentiaStoredProperties(properties) {
     localStorage.setItem(RENTIA_PROPERTIES_KEY, JSON.stringify(properties));
+}
+
+function seedRentiaDemoProperties() {
+    if (localStorage.getItem(RENTIA_PROPERTIES_KEY)) return;
+    saveRentiaStoredProperties(RENTIA_MOCK_PROPERTIES);
 }
 
 function mergeRentiaProperties(baseProperties = RENTIA_MOCK_PROPERTIES, localProperties = getRentiaStoredProperties()) {
@@ -402,8 +498,8 @@ function saveRentiaStoredBookings(bookings) {
 }
 
 function seedRentiaDemoBookings() {
-    if (getRentiaStoredBookings().length) return;
-    saveRentiaStoredBookings(RENTIA_DEMO_BOOKINGS);
+    if (localStorage.getItem(RENTIA_BOOKINGS_KEY)) return;
+    saveRentiaStoredBookings([]);
 }
 
 function upsertRentiaStoredBooking(booking) {
@@ -567,6 +663,8 @@ function logoutUser(redirectTo = 'index.html') {
     window.location.href = redirectTo;
 }
 
+seedRentiaDemoUsers();
+seedRentiaDemoProperties();
 seedRentiaDemoBookings();
 
 function showRentiaToast(message, type = 'info') {
@@ -1652,38 +1750,37 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             let confirmationCode = `ALQ-${savedBooking.id}`;
 
-            const url = `${API_BASE_URL}/bookings`;
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(bookingPayload)
-                });
+            if (API_BASE_URL) {
+                const url = `${API_BASE_URL}/bookings`;
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(bookingPayload)
+                    });
 
-                const responseBody = await response.json().catch((jsonError) => {
-                    console.warn('Booking response JSON parse failed:', jsonError);
-                    return null;
-                });
-                if (response.ok) {
-                    const backendBooking = responseBody?.booking || responseBody?.data || responseBody;
-                    const backendBookingId = backendBooking?.id || responseBody?.id || responseBody?.bookingId;
-                    if (backendBookingId) {
-                        const localBookings = getRentiaStoredBookings()
-                            .filter((booking) => normalizeRentiaBookingId(booking.id) !== normalizeRentiaBookingId(savedBooking.id));
-                        saveRentiaStoredBookings(localBookings);
-                        savedBooking = upsertRentiaStoredBooking({
-                            ...savedBooking,
-                            ...backendBooking,
-                            id: backendBookingId,
-                            status: 'Pendiente'
-                        });
-                        confirmationCode = responseBody?.confirmationCode || responseBody?.code || `ALQ-${backendBookingId}`;
+                    const responseBody = await response.json().catch(() => null);
+                    if (response.ok) {
+                        const backendBooking = responseBody?.booking || responseBody?.data || responseBody;
+                        const backendBookingId = backendBooking?.id || responseBody?.id || responseBody?.bookingId;
+                        if (backendBookingId) {
+                            const localBookings = getRentiaStoredBookings()
+                                .filter((booking) => normalizeRentiaBookingId(booking.id) !== normalizeRentiaBookingId(savedBooking.id));
+                            saveRentiaStoredBookings(localBookings);
+                            savedBooking = upsertRentiaStoredBooking({
+                                ...savedBooking,
+                                ...backendBooking,
+                                id: backendBookingId,
+                                status: 'Pendiente'
+                            });
+                            confirmationCode = responseBody?.confirmationCode || responseBody?.code || `ALQ-${backendBookingId}`;
+                        }
                     }
+                } catch (backendError) {
+                    console.warn('Reserva guardada en localStorage. Backend no disponible:', backendError);
                 }
-            } catch (backendError) {
-                console.warn('Reserva guardada en localStorage. Backend no disponible:', backendError);
             }
 
             const params = new URLSearchParams();

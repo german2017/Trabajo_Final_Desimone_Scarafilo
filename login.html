@@ -143,7 +143,6 @@
 
     <script src="assets/js/script.js"></script>
     <script>
-        const LOGIN_API_BASE_URL = 'http://localhost:4000/api';
         const loginForm = document.getElementById('loginForm');
         const loginButton = loginForm.querySelector('.login-btn');
         const loginMessage = document.createElement('p');
@@ -195,11 +194,11 @@
             loginMessage.style.display = 'none';
         }
 
-        loginForm.addEventListener('submit', async function(e) {
+        loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
             clearLoginError();
 
-            const email = document.getElementById('email').value.trim();
+            const email = document.getElementById('email').value.trim().toLowerCase();
             const password = document.getElementById('password').value;
             const selectedRole = document.getElementById('role').value;
 
@@ -214,33 +213,28 @@
             loginButton.textContent = 'Ingresando...';
 
             try {
-                const response = await fetch(`${LOGIN_API_BASE_URL}/auth/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        email,
-                        password,
-                        role: selectedRole
-                    })
-                });
+                const user = typeof findRentiaUserByCredentials === 'function'
+                    ? findRentiaUserByCredentials(email, password)
+                    : null;
 
-                const result = await response.json().catch(() => null);
-
-                if (!response.ok || !result?.success || !result?.user) {
+                if (!user || normalizeRole(user.role) !== normalizeRole(selectedRole)) {
                     throw new Error('Login failed');
                 }
 
-                const user = {
-                    ...result.user,
-                    role: normalizeRole(result.user.role || selectedRole)
+                const sessionUser = {
+                    ...user,
+                    role: normalizeRole(user.role)
                 };
 
-                localStorage.setItem('alquileres_user', JSON.stringify(user));
+                if (typeof saveRentiaCurrentUser === 'function') {
+                    saveRentiaCurrentUser(sessionUser);
+                } else {
+                    localStorage.setItem('alquileres_user', JSON.stringify(sessionUser));
+                }
+
                 window.location.href = typeof getPostLoginRedirect === 'function'
-                    ? getPostLoginRedirect(user.role)
-                    : getDashboardByRole(user.role);
+                    ? getPostLoginRedirect(sessionUser.role)
+                    : getDashboardByRole(sessionUser.role);
             } catch (error) {
                 showLoginError('No pudimos iniciar sesión. Verifica tus datos.');
             } finally {
