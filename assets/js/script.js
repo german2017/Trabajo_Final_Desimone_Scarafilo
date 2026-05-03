@@ -14,12 +14,473 @@ async function apiFetch(path, options = {}) {
     }
 }
 
-function getStoredUser() {
+const RENTIA_MOCK_PROPERTIES = [
+    {
+        id: '1',
+        title: 'Apartamento moderno en Polanco',
+        location: 'Polanco, Ciudad de Mexico',
+        ownerId: 'owner-1',
+        price: 2500,
+        currency: 'MXN',
+        image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop',
+        gallery: [
+            'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop',
+            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop',
+            'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&h=600&fit=crop',
+            'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop'
+        ],
+        rating: 4.8,
+        reviewCount: 127,
+        status: 'available',
+        type: 'apartamento',
+        maxGuests: 4,
+        description: [
+            'Hermoso apartamento completamente amueblado en el corazon de Polanco, cerca de restaurantes, tiendas y museos.',
+            'Incluye sala con Smart TV, cocina equipada, aire acondicionado y espacios comodos para una estadia urbana.'
+        ],
+        amenities: ['WiFi de alta velocidad', 'Smart TV', 'Cocina equipada', 'Aire acondicionado', 'Lavadora', 'Estacionamiento'],
+        host: {
+            name: 'Maria Gonzalez',
+            verified: true,
+            avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop'
+        }
+    },
+    {
+        id: '2',
+        title: 'Casa espaciosa en Roma Norte',
+        location: 'Roma Norte, Ciudad de Mexico',
+        ownerId: 'owner-1',
+        price: 3200,
+        currency: 'MXN',
+        image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop',
+        gallery: [
+            'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=800&h=600&fit=crop',
+            'https://images.unsplash.com/photo-1494526585095-c41746248156?w=800&h=600&fit=crop'
+        ],
+        rating: 4.7,
+        reviewCount: 89,
+        status: 'available',
+        type: 'casa',
+        maxGuests: 6,
+        description: [
+            'Casa familiar amplia y luminosa con jardin privado en una de las zonas mas tranquilas de Roma Norte.',
+            'Cuenta con cocina completa, sala comedor, tres habitaciones y patio interior para reuniones.'
+        ],
+        amenities: ['Jardin privado', 'Cocina equipada', 'WiFi', 'Lavadora', 'Estacionamiento'],
+        host: {
+            name: 'Maria Gonzalez',
+            verified: true,
+            avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop'
+        }
+    },
+    {
+        id: '3',
+        title: 'Loft centrico en Centro Historico',
+        location: 'Centro Historico, Ciudad de Mexico',
+        ownerId: 'owner-1',
+        price: 2200,
+        currency: 'MXN',
+        image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop',
+        gallery: [
+            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=600&fit=crop',
+            'https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&h=600&fit=crop'
+        ],
+        rating: 4.9,
+        reviewCount: 203,
+        status: 'available',
+        type: 'loft',
+        maxGuests: 2,
+        description: [
+            'Loft de diseno con techos altos y mucha luz natural, ubicado a pasos de museos y cafes del Centro Historico.',
+            'Perfecto para parejas o viajeros que buscan una estancia con estilo y ubicacion premium.'
+        ],
+        amenities: ['WiFi', 'Smart TV', 'Cocina equipada', 'Lavadora', 'Aire acondicionado'],
+        host: {
+            name: 'Maria Gonzalez',
+            verified: true,
+            avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop'
+        }
+    },
+    {
+        id: '4',
+        title: 'Casa con piscina en Palermo',
+        location: 'Palermo, Buenos Aires',
+        ownerId: 'owner-1',
+        price: 1800,
+        currency: 'MXN',
+        image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop',
+        gallery: [
+            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop'
+        ],
+        rating: 4.6,
+        reviewCount: 42,
+        status: 'active',
+        type: 'casa',
+        maxGuests: 5,
+        bedrooms: 3,
+        bathrooms: 2,
+        description: [
+            'Casa comoda para familias o grupos, con patio, piscina y muy buena conexion con bares y parques.',
+            'Una opcion equilibrada para turismo, descanso o trabajo remoto.'
+        ],
+        amenities: ['WiFi', 'Pileta', 'Cocina equipada', 'Aire acondicionado', 'Cochera'],
+        host: {
+            name: 'Maria Gonzalez',
+            verified: true,
+            avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop'
+        }
+    },
+    {
+        id: '5',
+        title: 'Estudio frente al mar',
+        location: 'Mar del Plata, Buenos Aires',
+        ownerId: 'owner-1',
+        price: 1600,
+        currency: 'MXN',
+        image: 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=800&h=600&fit=crop',
+        gallery: [
+            'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=800&h=600&fit=crop',
+            'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=600&fit=crop'
+        ],
+        rating: 4.5,
+        reviewCount: 31,
+        status: 'paused',
+        type: 'estudio',
+        maxGuests: 2,
+        bedrooms: 1,
+        bathrooms: 1,
+        description: [
+            'Estudio luminoso frente al mar, ideal para escapadas cortas y viajes de pareja.',
+            'Actualmente pausado para mostrar el estado en el panel del anfitrion.'
+        ],
+        amenities: ['WiFi', 'Cocina equipada', 'Aire acondicionado'],
+        host: {
+            name: 'Maria Gonzalez',
+            verified: true,
+            avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop'
+        }
+    }
+];
+
+function getRentiaMockPropertyById(propertyId) {
+    const normalizedId = String(propertyId || '').replace(/^property-/, '') || '1';
+    return getRentiaAllProperties().find((property) => normalizeRentiaPropertyId(property.id) === normalizedId) || null;
+}
+
+const RENTIA_PROPERTIES_KEY = 'rentia_properties';
+
+function normalizeRentiaPropertyId(propertyId) {
+    return String(propertyId || '').replace(/^property-/, '').trim();
+}
+
+function normalizeRentiaPropertyType(type) {
+    const normalized = String(type || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+
+    if (normalized.includes('house') || normalized.includes('casa')) return 'casa';
+    if (normalized.includes('loft')) return 'loft';
+    if (normalized.includes('studio') || normalized.includes('estudio')) return 'estudio';
+    return 'apartamento';
+}
+
+function normalizeRentiaPropertyStatus(status) {
+    const normalized = String(status || 'active')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+
+    if (normalized.includes('paus') || normalized.includes('inactive')) return 'paused';
+    if (normalized.includes('deleted') || normalized.includes('elimin')) return 'deleted';
+    return 'active';
+}
+
+function isRentiaPropertyVisible(property) {
+    return normalizeRentiaPropertyStatus(property.status) === 'active' && !property.deleted;
+}
+
+function getRentiaStoredProperties() {
     try {
-        return JSON.parse(localStorage.getItem('alquileres_user'));
+        const stored = JSON.parse(localStorage.getItem(RENTIA_PROPERTIES_KEY) || '[]');
+        return Array.isArray(stored) ? stored : [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function saveRentiaStoredProperties(properties) {
+    localStorage.setItem(RENTIA_PROPERTIES_KEY, JSON.stringify(properties));
+}
+
+function mergeRentiaProperties(baseProperties = RENTIA_MOCK_PROPERTIES, localProperties = getRentiaStoredProperties()) {
+    const merged = new Map();
+
+    baseProperties.forEach((property) => {
+        merged.set(normalizeRentiaPropertyId(property.id), {
+            ...property,
+            type: normalizeRentiaPropertyType(property.type),
+            status: normalizeRentiaPropertyStatus(property.status)
+        });
+    });
+
+    localProperties.forEach((property) => {
+        const id = normalizeRentiaPropertyId(property.id);
+        if (!id) return;
+        const existing = merged.get(id) || {};
+        merged.set(id, {
+            ...existing,
+            ...property,
+            id,
+            type: normalizeRentiaPropertyType(property.type),
+            status: normalizeRentiaPropertyStatus(property.status)
+        });
+    });
+
+    return Array.from(merged.values()).filter((property) => !property.deleted);
+}
+
+function getRentiaAllProperties() {
+    return mergeRentiaProperties();
+}
+
+function getRentiaVisibleProperties() {
+    return getRentiaAllProperties().filter(isRentiaPropertyVisible);
+}
+
+function upsertRentiaStoredProperty(property) {
+    const properties = getRentiaStoredProperties();
+    const id = normalizeRentiaPropertyId(property.id) || `local-property-${Date.now()}`;
+    const normalizedProperty = {
+        ...property,
+        id,
+        type: normalizeRentiaPropertyType(property.type),
+        status: normalizeRentiaPropertyStatus(property.status)
+    };
+    const existingIndex = properties.findIndex((item) => normalizeRentiaPropertyId(item.id) === id);
+
+    if (existingIndex >= 0) {
+        properties[existingIndex] = { ...properties[existingIndex], ...normalizedProperty };
+    } else {
+        properties.push(normalizedProperty);
+    }
+
+    saveRentiaStoredProperties(properties);
+    return normalizedProperty;
+}
+
+function updateRentiaStoredPropertyStatus(propertyId, status) {
+    const property = getRentiaAllProperties().find((item) => normalizeRentiaPropertyId(item.id) === normalizeRentiaPropertyId(propertyId));
+    if (!property) return null;
+
+    return upsertRentiaStoredProperty({
+        ...property,
+        status: normalizeRentiaPropertyStatus(status),
+        updatedAt: new Date().toISOString()
+    });
+}
+
+function deleteRentiaStoredProperty(propertyId) {
+    const property = getRentiaAllProperties().find((item) => normalizeRentiaPropertyId(item.id) === normalizeRentiaPropertyId(propertyId));
+    if (!property) return false;
+
+    upsertRentiaStoredProperty({
+        ...property,
+        deleted: true,
+        status: 'deleted',
+        updatedAt: new Date().toISOString()
+    });
+    return true;
+}
+
+const RENTIA_BOOKINGS_KEY = 'rentia_bookings';
+const RENTIA_FINAL_BOOKING_STATUSES = ['Cancelada', 'Rechazada', 'Finalizada'];
+const RENTIA_DEMO_BOOKINGS = [
+    {
+        id: 'demo-booking-1',
+        propertyId: '1',
+        tenantId: 'tenant-1',
+        ownerId: 'owner-1',
+        title: 'Apartamento moderno en Polanco',
+        location: 'Polanco, Ciudad de Mexico',
+        host: 'Maria Gonzalez',
+        checkin: '2026-05-15',
+        checkout: '2026-05-20',
+        guests: 2,
+        nights: 5,
+        total: 12500,
+        status: 'Confirmada',
+        createdAt: '2026-04-20T10:00:00.000Z'
+    },
+    {
+        id: 'demo-booking-2',
+        propertyId: '2',
+        tenantId: 'tenant-1',
+        ownerId: 'owner-1',
+        title: 'Casa familiar en Roma Norte',
+        location: 'Roma Norte, Ciudad de Mexico',
+        host: 'Maria Gonzalez',
+        checkin: '2026-06-03',
+        checkout: '2026-06-08',
+        guests: 4,
+        nights: 5,
+        total: 16000,
+        status: 'Pendiente',
+        createdAt: '2026-04-25T12:30:00.000Z'
+    },
+    {
+        id: 'demo-booking-3',
+        propertyId: '4',
+        tenantId: 'tenant-1',
+        ownerId: 'owner-1',
+        title: 'Casa con piscina en Palermo',
+        location: 'Palermo, Buenos Aires',
+        host: 'Maria Gonzalez',
+        checkin: '2026-04-10',
+        checkout: '2026-04-14',
+        guests: 3,
+        nights: 4,
+        total: 7200,
+        status: 'Cancelada',
+        createdAt: '2026-03-28T09:00:00.000Z'
+    }
+];
+
+function normalizeRentiaBookingId(bookingId) {
+    return String(bookingId || '').trim();
+}
+
+function normalizeRentiaBookingStatus(status) {
+    const normalized = String(status || 'Pendiente')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+
+    if (normalized.includes('confirm')) return 'Confirmada';
+    if (normalized.includes('rechaz')) return 'Rechazada';
+    if (normalized.includes('cancel')) return 'Cancelada';
+    if (normalized.includes('final') || normalized.includes('complet')) return 'Finalizada';
+    return 'Pendiente';
+}
+
+function getRentiaBookingStatusClass(status) {
+    const normalized = normalizeRentiaBookingStatus(status);
+    if (normalized === 'Confirmada') return 'confirmed';
+    if (normalized === 'Pendiente') return 'pending';
+    if (normalized === 'Rechazada') return 'rejected';
+    if (normalized === 'Cancelada') return 'cancelled';
+    if (normalized === 'Finalizada') return 'completed';
+    return '';
+}
+
+function isRentiaFinalBookingStatus(status) {
+    return RENTIA_FINAL_BOOKING_STATUSES.includes(normalizeRentiaBookingStatus(status));
+}
+
+function canRentiaBookingTransition(currentStatus, nextStatus) {
+    const current = normalizeRentiaBookingStatus(currentStatus);
+    const next = normalizeRentiaBookingStatus(nextStatus);
+
+    if (current === next) return true;
+    if (isRentiaFinalBookingStatus(current)) return false;
+    if (current === 'Pendiente') return ['Confirmada', 'Rechazada', 'Cancelada'].includes(next);
+    if (current === 'Confirmada') return ['Cancelada', 'Finalizada'].includes(next);
+    return false;
+}
+
+function getRentiaStoredBookings() {
+    try {
+        const stored = JSON.parse(localStorage.getItem(RENTIA_BOOKINGS_KEY) || '[]');
+        return Array.isArray(stored) ? stored : [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function saveRentiaStoredBookings(bookings) {
+    localStorage.setItem(RENTIA_BOOKINGS_KEY, JSON.stringify(bookings));
+}
+
+function seedRentiaDemoBookings() {
+    if (getRentiaStoredBookings().length) return;
+    saveRentiaStoredBookings(RENTIA_DEMO_BOOKINGS);
+}
+
+function upsertRentiaStoredBooking(booking) {
+    const bookings = getRentiaStoredBookings();
+    const bookingId = normalizeRentiaBookingId(booking.id);
+    const normalizedBooking = {
+        ...booking,
+        id: bookingId || `local-${Date.now()}`,
+        status: normalizeRentiaBookingStatus(booking.status)
+    };
+    const existingIndex = bookings.findIndex((item) => normalizeRentiaBookingId(item.id) === normalizedBooking.id);
+
+    if (existingIndex >= 0) {
+        bookings[existingIndex] = { ...bookings[existingIndex], ...normalizedBooking };
+    } else {
+        bookings.push(normalizedBooking);
+    }
+
+    saveRentiaStoredBookings(bookings);
+    return normalizedBooking;
+}
+
+function mergeRentiaBookings(primaryBookings, localBookings = getRentiaStoredBookings()) {
+    const merged = new Map();
+
+    [...primaryBookings, ...localBookings].forEach((booking) => {
+        const id = normalizeRentiaBookingId(booking.id);
+        if (!id) return;
+        const existing = merged.get(id) || {};
+        merged.set(id, {
+            ...existing,
+            ...booking,
+            status: normalizeRentiaBookingStatus(booking.status || existing.status)
+        });
+    });
+
+    return Array.from(merged.values());
+}
+
+function updateRentiaStoredBookingStatus(bookingId, nextStatus) {
+    const normalizedId = normalizeRentiaBookingId(bookingId);
+    const bookings = getRentiaStoredBookings();
+    const bookingIndex = bookings.findIndex((booking) => normalizeRentiaBookingId(booking.id) === normalizedId);
+
+    if (bookingIndex < 0) return null;
+
+    const currentStatus = bookings[bookingIndex].status;
+    const normalizedNextStatus = normalizeRentiaBookingStatus(nextStatus);
+    if (!canRentiaBookingTransition(currentStatus, normalizedNextStatus)) {
+        return null;
+    }
+
+    bookings[bookingIndex] = {
+        ...bookings[bookingIndex],
+        status: normalizedNextStatus,
+        updatedAt: new Date().toISOString()
+    };
+    saveRentiaStoredBookings(bookings);
+    return bookings[bookingIndex];
+}
+
+const RENTIA_SESSION_KEY = 'alquileres_user';
+const RENTIA_POST_LOGIN_REDIRECT_KEY = 'rentia_post_login_redirect';
+
+function getCurrentUser() {
+    try {
+        const user = JSON.parse(localStorage.getItem(RENTIA_SESSION_KEY));
+        if (!user) return null;
+        const userId = user.id || user._id || user.userId;
+        return userId ? { ...user, id: userId, role: normalizeSessionRole(user.role) } : null;
     } catch (error) {
         return null;
     }
+}
+
+function getStoredUser() {
+    return getCurrentUser();
 }
 
 function normalizeSessionRole(role) {
@@ -43,6 +504,17 @@ function normalizeSessionRole(role) {
     return normalized;
 }
 
+function isAuthenticated() {
+    return Boolean(getCurrentUser());
+}
+
+function hasRole(role) {
+    const user = getCurrentUser();
+    if (!user) return false;
+    const allowedRoles = Array.isArray(role) ? role : [role];
+    return allowedRoles.map(normalizeSessionRole).includes(normalizeSessionRole(user.role));
+}
+
 function getDashboardLink(role) {
     switch (normalizeSessionRole(role)) {
         case 'owner':
@@ -53,6 +525,89 @@ function getDashboardLink(role) {
         default:
             return { href: 'tenant-dashboard.html', text: 'Mi cuenta' };
     }
+}
+
+function getCurrentPageName() {
+    return window.location.pathname.split('/').pop() || 'index.html';
+}
+
+function savePostLoginRedirect() {
+    const target = `${getCurrentPageName()}${window.location.search || ''}`;
+    localStorage.setItem(RENTIA_POST_LOGIN_REDIRECT_KEY, target);
+    return target;
+}
+
+function getPostLoginRedirect(role) {
+    const urlRedirect = new URLSearchParams(window.location.search).get('redirect');
+    const target = localStorage.getItem(RENTIA_POST_LOGIN_REDIRECT_KEY) || urlRedirect;
+    if (!target) return getDashboardLink(role).href;
+
+    const targetPage = target.split('?')[0];
+    const rolePages = {
+        'tenant-dashboard.html': 'tenant',
+        'owner-dashboard.html': 'owner',
+        'admin-dashboard.html': 'admin',
+        'create-property.html': 'owner',
+        'booking.html': 'tenant',
+        'booking-success.html': 'tenant'
+    };
+    const expectedRole = rolePages[targetPage];
+    localStorage.removeItem(RENTIA_POST_LOGIN_REDIRECT_KEY);
+
+    if (expectedRole && normalizeSessionRole(role) !== expectedRole) {
+        return getDashboardLink(role).href;
+    }
+
+    return target;
+}
+
+function logoutUser(redirectTo = 'index.html') {
+    localStorage.removeItem(RENTIA_SESSION_KEY);
+    localStorage.removeItem(RENTIA_POST_LOGIN_REDIRECT_KEY);
+    window.location.href = redirectTo;
+}
+
+seedRentiaDemoBookings();
+
+function showRentiaToast(message, type = 'info') {
+    if (!message) return;
+    let container = document.querySelector('.rentia-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'rentia-toast-container';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `rentia-toast ${type}`;
+    toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+    toast.textContent = message;
+    container.appendChild(toast);
+
+    window.setTimeout(() => {
+        toast.classList.add('is-hiding');
+        window.setTimeout(() => toast.remove(), 220);
+    }, 3200);
+}
+
+function setButtonLoading(button, isLoading, loadingText) {
+    if (!button) return '';
+    if (isLoading) {
+        const originalText = button.textContent;
+        button.dataset.originalText = originalText;
+        button.disabled = true;
+        button.classList.add('is-loading');
+        if (loadingText) button.textContent = loadingText;
+        return originalText;
+    }
+
+    button.disabled = false;
+    button.classList.remove('is-loading');
+    if (button.dataset.originalText) {
+        button.textContent = button.dataset.originalText;
+        delete button.dataset.originalText;
+    }
+    return '';
 }
 
 (function guardProtectedPages() {
@@ -70,15 +625,18 @@ function getDashboardLink(role) {
         'tenant-dashboard.html': 'tenant',
         'owner-dashboard.html': 'owner',
         'admin-dashboard.html': 'admin',
-        'create-property.html': 'owner'
+        'create-property.html': 'owner',
+        'booking.html': 'tenant',
+        'booking-success.html': 'tenant'
     };
 
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const currentPage = getCurrentPageName();
     if (!protectedPages.has(currentPage)) return;
 
-    const user = getStoredUser();
-    if (!user?.id) {
-        window.location.replace('login.html');
+    const user = getCurrentUser();
+    if (!user) {
+        const target = savePostLoginRedirect();
+        window.location.replace(`login.html?redirect=${encodeURIComponent(target)}`);
         return;
     }
 
@@ -95,14 +653,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!navbarActions) return;
 
     function isCurrentPage(href) {
-        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        const currentPage = getCurrentPageName();
         return currentPage === href;
     }
 
     function renderNavbarActions() {
-        const user = getStoredUser();
+        const user = getCurrentUser();
 
-        if (!user?.id) {
+        if (!user) {
             navbarActions.innerHTML = `
                 <a href="login.html" class="login-link ${isCurrentPage('login.html') ? 'active' : ''}">Iniciar sesión</a>
                 <a href="register.html" class="register-btn ${isCurrentPage('register.html') ? 'active' : ''}">Registrarse</a>
@@ -110,9 +668,17 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const dashboard = getDashboardLink(user.role);
+        const role = normalizeSessionRole(user.role);
+        const dashboard = role === 'owner'
+            ? { href: 'owner-dashboard.html', text: 'Mis propiedades' }
+            : role === 'admin'
+                ? { href: 'admin-dashboard.html', text: 'Panel administración' }
+                : { href: 'tenant-dashboard.html', text: 'Mis reservas' };
+        const messagesLink = role === 'admin'
+            ? ''
+            : `<a href="messages.html" class="login-link ${isCurrentPage('messages.html') ? 'active' : ''}">Mensajes</a>`;
         navbarActions.innerHTML = `
-            <a href="messages.html" class="login-link ${isCurrentPage('messages.html') ? 'active' : ''}">Mensajes</a>
+            ${messagesLink}
             <a href="${dashboard.href}" class="login-link ${isCurrentPage(dashboard.href) ? 'active' : ''}">${dashboard.text}</a>
             <a href="index.html" class="login-link" data-logout-link>Cerrar sesión</a>
         `;
@@ -125,8 +691,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!logoutLink) return;
 
         event.preventDefault();
-        localStorage.removeItem('alquileres_user');
-        window.location.href = 'index.html';
+        logoutUser('index.html');
     });
 });
 
@@ -148,6 +713,57 @@ document.addEventListener('DOMContentLoaded', function() {
             navbar.classList.add('scrolled');
         }
     }
+
+    document.querySelectorAll('[data-assistant-suggestion]').forEach((button) => {
+        button.addEventListener('click', function() {
+            const input = document.querySelector('.assistant-text-input');
+            if (input) {
+                input.value = this.dataset.assistantSuggestion || '';
+                input.focus();
+            }
+            showRentiaToast('Sugerencia cargada en el chat.', 'success');
+        });
+    });
+
+    const assistantSendBtn = document.getElementById('assistantSendBtn');
+    if (assistantSendBtn) {
+        assistantSendBtn.addEventListener('click', function() {
+            const input = document.querySelector('.assistant-text-input');
+            const text = input?.value.trim();
+            if (!text) {
+                showRentiaToast('Escribí una consulta para el asistente.', 'error');
+                return;
+            }
+            showRentiaToast('Usá el recomendador inteligente para obtener opciones concretas.', 'info');
+            input.value = '';
+        });
+    }
+
+    const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+    if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', function() {
+            window.location.href = 'search.html';
+        });
+    }
+
+    document.querySelectorAll('[data-page], [data-page-action]').forEach((button) => {
+        button.addEventListener('click', function() {
+            if (this.disabled) return;
+            showRentiaToast('La paginación completa se activará con el backend final.', 'info');
+        });
+    });
+
+    document.querySelectorAll('[data-calendar-action]').forEach((button) => {
+        button.addEventListener('click', function() {
+            showRentiaToast('Calendario de disponibilidad listo para la demo.', 'info');
+        });
+    });
+
+    document.querySelectorAll('[data-message-action]').forEach((button) => {
+        button.addEventListener('click', function() {
+            showRentiaToast('Acción de mensajería disponible en modo demo.', 'info');
+        });
+    });
 
     // Search button click handler
     const searchBtn = document.getElementById('searchBtn');
@@ -185,7 +801,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 destinationInput.style.borderRadius = '8px';
                 destinationInput.style.padding = '8px';
                 
-                alert('Por favor, ingresa un destino para buscar propiedades.');
+                showRentiaToast('Ingresá un destino para buscar propiedades.', 'error');
                 destinationInput.focus();
                 
                 // Reset border after focus
@@ -227,7 +843,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 200);
             }
             
-            console.log('Wishlist toggled:', this.classList.contains('active'));
         });
     });
 
@@ -242,7 +857,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.style.animation = '';
             }, 10);
             
-            alert('¡Hola! 🤖 Soy tu asistente de IA. Estoy aquí para ayudarte a encontrar el alquiler perfecto. ¿En qué puedo ayudarte hoy?');
+            showRentiaToast('Abrí el Asistente IA para recibir recomendaciones personalizadas.', 'info');
         });
     }
 
@@ -285,7 +900,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    console.log('Alquileres - Premium Home page initialized');
 });
 
 /**
@@ -367,7 +981,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 searchDestination.style.border = '2px solid #ef4444';
                 searchDestination.style.borderRadius = '8px';
                 searchDestination.style.padding = '8px';
-                alert('Por favor, ingresa un destino para buscar propiedades.');
+                showRentiaToast('Ingresá un destino para buscar propiedades.', 'error');
                 setTimeout(() => {
                     searchDestination.style.border = 'none';
                     searchDestination.style.padding = '0';
@@ -523,13 +1137,19 @@ document.addEventListener('DOMContentLoaded', function() {
         setStatusMessage('Cargando propiedades...');
 
         try {
-            const response = await apiFetch('/properties');
-            if (!response.ok) {
-                throw new Error('Respuesta de red no exitosa');
+            let properties = getRentiaVisibleProperties();
+
+            try {
+                const response = await apiFetch('/properties');
+                if (response.ok) {
+                    const result = await response.json();
+                    const backendProperties = Array.isArray(result.properties) ? result.properties : [];
+                    properties = mergeRentiaProperties(backendProperties).filter(isRentiaPropertyVisible);
+                }
+            } catch (backendError) {
+                console.warn('Usando propiedades locales para busqueda:', backendError);
             }
 
-            const result = await response.json();
-            const properties = Array.isArray(result.properties) ? result.properties : [];
             const destinationFilter = destination ? destination.toLowerCase().trim() : '';
             const filteredProperties = destinationFilter
                 ? properties.filter((item) => {
@@ -541,7 +1161,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (filteredProperties.length === 0) {
                 updateResultsHeading(0);
-                setStatusMessage('No se encontraron propiedades');
+                setStatusMessage('No encontramos propiedades con esos filtros. Probá con otra zona o quitá algunos criterios.');
                 return;
             }
 
@@ -557,17 +1177,12 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Error al cargar propiedades:', error);
             updateResultsHeading(0);
-            setStatusMessage('No se pudo conectar con el servidor');
+            setStatusMessage('No se pudieron cargar propiedades');
         }
     }
 
     loadSearchResults();
 
-    console.log('Alquileres - Search page initialized with params:', {
-        destination: destination || 'default',
-        checkin: checkin || 'default',
-        checkout: checkout || 'default'
-    });
 });
 
 /**
@@ -611,6 +1226,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const destination = params.get('destination');
     const checkin = params.get('checkin');
     const checkout = params.get('checkout');
+    const useMockProperty = params.get('source') === 'assistant' || params.get('mock') === '1';
     
     // Default pricing values
     let nightlyPrice = 1850;
@@ -849,9 +1465,25 @@ document.addEventListener('DOMContentLoaded', function() {
     
     async function loadProperty() {
         setLoadingState();
+        const localProperty = getRentiaStoredProperties().find((property) => normalizeRentiaPropertyId(property.id) === normalizeRentiaPropertyId(propertyId));
+        if (useMockProperty || localProperty) {
+            const property = localProperty || getRentiaMockPropertyById(propertyId);
+            if (property) {
+                populatePropertyDetails(property);
+                updateContentAfterLoad();
+                return;
+            }
+        }
+
         try {
             const response = await apiFetch(`/properties/${propertyId}`);
             if (!response.ok) {
+                const fallbackProperty = getRentiaMockPropertyById(propertyId);
+                if (fallbackProperty) {
+                    populatePropertyDetails(fallbackProperty);
+                    updateContentAfterLoad();
+                    return;
+                }
                 if (response.status === 404) {
                     setErrorState('Propiedad no encontrada');
                     return;
@@ -867,8 +1499,14 @@ document.addEventListener('DOMContentLoaded', function() {
             populatePropertyDetails(property);
             updateContentAfterLoad();
         } catch (error) {
+            const fallbackProperty = getRentiaMockPropertyById(propertyId);
+            if (fallbackProperty) {
+                populatePropertyDetails(fallbackProperty);
+                updateContentAfterLoad();
+                return;
+            }
             console.error('Error al cargar propiedad:', error);
-            setErrorState('No se pudo conectar con el servidor');
+            setErrorState('No se pudo cargar la propiedad');
         }
     }
     
@@ -891,12 +1529,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     loadProperty();
     
-    console.log('Alquileres - Property detail page initialized:', {
-        propertyId: propertyId || 'default',
-        destination: destination || 'default',
-        checkin: checkin || 'default',
-        checkout: checkout || 'default'
-    });
 });
 
 /**
@@ -908,7 +1540,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const params = new URLSearchParams(window.location.search);
     const propertyId = params.get('propertyId') || params.get('id') || 'property-1';
-    const tenantId = 'tenant-1';
+    const currentUser = getCurrentUser();
+    const tenantId = currentUser?.id || 'tenant-1';
     const ownerId = params.get('ownerId') || 'owner-1';
     const title = params.get('title') || 'Apartamento moderno en Polanco';
     const location = params.get('location') || 'Polanco, Ciudad de México';
@@ -926,9 +1559,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const priceValue = document.querySelector('.price-details .price-row .price-value');
     const totalAmount = document.querySelector('.price-total .total-amount');
     const confirmationMessage = document.createElement('div');
-    confirmationMessage.style.color = '#b91c1c';
-    confirmationMessage.style.margin = '1rem 0';
-    confirmationMessage.style.fontWeight = '500';
+    confirmationMessage.className = 'system-feedback error';
     confirmationMessage.style.display = 'none';
     confirmPayBtn.parentNode.insertBefore(confirmationMessage, confirmPayBtn);
 
@@ -972,7 +1603,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         for (const field of fields) {
             if (!field.el || !field.el.value.trim()) {
-                alert(`Por favor completa el campo: ${field.label}`);
+                showBookingError(`Por favor completa el campo: ${field.label}.`);
                 field.el?.focus();
                 return false;
             }
@@ -980,7 +1611,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const emailInput = document.getElementById('email');
         if (emailInput && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) {
-            alert('Ingresa un correo electrónico válido.');
+            showBookingError('Ingresa un correo electrónico válido.');
             emailInput.focus();
             return false;
         }
@@ -995,6 +1626,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         confirmPayBtn.disabled = true;
         const originalText = confirmPayBtn.textContent;
+        confirmPayBtn.classList.add('is-loading');
         confirmPayBtn.textContent = 'Procesando...';
 
         const bookingPayload = {
@@ -1013,43 +1645,50 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         try {
+            let savedBooking = upsertRentiaStoredBooking({
+                ...bookingPayload,
+                id: `local-${Date.now()}`,
+                createdAt: new Date().toISOString()
+            });
+            let confirmationCode = `ALQ-${savedBooking.id}`;
+
             const url = `${API_BASE_URL}/bookings`;
-            console.log('Booking payload:', bookingPayload);
-            console.log('Sending booking POST to:', url);
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(bookingPayload)
-            });
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(bookingPayload)
+                });
 
-            console.log('Booking response status:', response.status, 'ok:', response.ok);
-
-            const responseBody = await response.json().catch((jsonError) => {
-                console.warn('Booking response JSON parse failed:', jsonError);
-                return null;
-            });
-            console.log('Booking response body:', responseBody);
-
-            if (!response.ok) {
-                console.error('Booking POST failed:', response.status, responseBody);
-                alert('No pudimos confirmar la reserva. Intenta nuevamente.');
-                return;
-            }
-
-            const bookingId = responseBody?.booking?.id || responseBody?.id || responseBody?.bookingId;
-            const confirmationCode = responseBody?.confirmationCode || responseBody?.code || (bookingId ? `ALQ-${bookingId}` : null);
-
-            if (!bookingId) {
-                console.error('Booking POST returned no booking id:', responseBody);
-                alert('No pudimos confirmar la reserva. Intenta nuevamente.');
-                return;
+                const responseBody = await response.json().catch((jsonError) => {
+                    console.warn('Booking response JSON parse failed:', jsonError);
+                    return null;
+                });
+                if (response.ok) {
+                    const backendBooking = responseBody?.booking || responseBody?.data || responseBody;
+                    const backendBookingId = backendBooking?.id || responseBody?.id || responseBody?.bookingId;
+                    if (backendBookingId) {
+                        const localBookings = getRentiaStoredBookings()
+                            .filter((booking) => normalizeRentiaBookingId(booking.id) !== normalizeRentiaBookingId(savedBooking.id));
+                        saveRentiaStoredBookings(localBookings);
+                        savedBooking = upsertRentiaStoredBooking({
+                            ...savedBooking,
+                            ...backendBooking,
+                            id: backendBookingId,
+                            status: 'Pendiente'
+                        });
+                        confirmationCode = responseBody?.confirmationCode || responseBody?.code || `ALQ-${backendBookingId}`;
+                    }
+                }
+            } catch (backendError) {
+                console.warn('Reserva guardada en localStorage. Backend no disponible:', backendError);
             }
 
             const params = new URLSearchParams();
             params.set('id', propertyId);
-            params.set('bookingId', bookingId);
+            params.set('bookingId', savedBooking.id);
             if (confirmationCode) params.set('code', confirmationCode);
             params.set('title', title);
             params.set('location', location);
@@ -1062,20 +1701,19 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = `booking-success.html?${params.toString()}`;
         } catch (error) {
             console.error('Error al enviar la reserva:', error);
-            alert('No pudimos confirmar la reserva. Intenta nuevamente.');
+            showBookingError('No pudimos crear la reserva. Revisá los datos e intentá nuevamente.');
+            showRentiaToast('No pudimos crear la reserva.', 'error');
         } finally {
             confirmPayBtn.disabled = false;
+            confirmPayBtn.classList.remove('is-loading');
             confirmPayBtn.textContent = originalText;
         }
     }
 
     confirmPayBtn.addEventListener('click', function(event) {
         event.preventDefault();
-        console.log('Confirmar y pagar clickeado');
         submitBooking();
     });
-
-    console.log('Listener attached to #confirm-pay-btn');
 });
 
 /**
@@ -1098,6 +1736,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const total = params.get('total');
     const hostName = params.get('host');
     const reservationCode = params.get('code');
+
+    const successText = document.querySelector('.success-text');
+    successTitle.textContent = 'Reserva creada correctamente';
+    if (successText) {
+        successText.textContent = 'Tu solicitud quedó registrada y figura como Pendiente hasta que el anfitrión la confirme.';
+    }
     
     // Helper function to format date
     function formatDate(dateStr) {
@@ -1195,18 +1839,6 @@ document.addEventListener('DOMContentLoaded', function() {
         hostNameEl.textContent = decodeURIComponent(hostName);
     }
     
-    console.log('Alquileres - Booking success page initialized:', {
-        propertyId: propertyId || 'default',
-        propertyTitle: propertyTitle || 'default',
-        location: location || 'default',
-        checkin: checkin || 'default',
-        checkout: checkout || 'default',
-        guests: guests || 'default',
-        nights: nights || 'default',
-        total: total || 'default',
-        hostName: hostName || 'default',
-        reservationCode: reservationCode || 'default'
-    });
 });
 
 /**
@@ -1218,6 +1850,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const initialReservationsHtml = reservationsList.innerHTML;
     const countEl = document.getElementById('tenant-bookings-count');
+    const currentUser = getCurrentUser();
+    const TENANT_ID = currentUser?.id || 'tenant-1';
     const loadingMessage = 'Cargando tus reservaciones...';
     const emptyMessage = 'Todavía no tienes reservaciones';
     const errorMessage = 'No se pudieron cargar tus reservaciones';
@@ -1269,7 +1903,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return null;
         } catch (error) {
             console.warn('Error fetching property detail for', propertyId, error);
-            return null;
+            return getRentiaMockPropertyById(propertyId);
         }
     }
 
@@ -1293,30 +1927,32 @@ document.addEventListener('DOMContentLoaded', function() {
             checkin,
             checkout,
             status,
-            owner: ownerName
+            owner: ownerName,
+            total: booking.total || 0
         };
     }
 
     function getTenantStatusClass(status) {
-        const normalized = String(status || '').toLowerCase();
-
-        if (normalized.includes('confirm')) return 'confirmed';
-        if (normalized.includes('pend')) return 'pending';
-        if (normalized.includes('rechaz')) return 'rejected';
-        if (normalized.includes('complet')) return 'completed';
-
-        return '';
+        return getRentiaBookingStatusClass(status);
     }
 
     function getTenantStatusMessage(status) {
-        const normalized = String(status || '').toLowerCase();
+        const normalized = normalizeRentiaBookingStatus(status);
 
-        if (normalized.includes('rechaz')) {
+        if (normalized === 'Rechazada') {
             return 'Esta reserva fue rechazada por el anfitrión.';
         }
 
-        if (normalized.includes('pend')) {
+        if (normalized === 'Pendiente') {
             return 'Esperando confirmación del anfitrión.';
+        }
+
+        if (normalized === 'Cancelada') {
+            return 'Cancelaste esta reserva.';
+        }
+
+        if (normalized === 'Finalizada') {
+            return 'Esta reserva ya fue finalizada.';
         }
 
         return '';
@@ -1325,13 +1961,17 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderReservationCard(item) {
         const statusClass = getTenantStatusClass(item.status);
         const statusMessage = getTenantStatusMessage(item.status);
+        const normalizedStatus = normalizeRentiaBookingStatus(item.status);
+        const cancelAction = ['Pendiente', 'Confirmada'].includes(normalizedStatus)
+            ? `<button class="btn-outline-sm btn-danger-soft" data-tenant-action="cancel" data-booking-id="${item.id}">Cancelar reserva</button>`
+            : '';
         const detailsHref = item.propertyId ? `property-detail.html?id=${encodeURIComponent(item.propertyId)}` : 'property-detail.html';
         const messagesHref = `messages.html?host=${encodeURIComponent(item.owner || '')}&property=${encodeURIComponent(item.title || '')}&status=${encodeURIComponent(item.status)}&checkin=${encodeURIComponent(item.checkin)}&checkout=${encodeURIComponent(item.checkout)}`;
         const statusMessageHtml = statusMessage ? `<p class="reservation-status-message">${statusMessage}</p>` : '';
         const ownerHtml = item.owner ? `<div class="reservation-host"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=30&h=30&fit=crop" alt="${item.owner}"><span>Anfitrión: ${item.owner}</span></div>` : '';
 
         return `
-            <article class="reservation-card">
+            <article class="reservation-card" data-booking-id="${item.id}">
                 <div class="reservation-image">
                     <img src="${item.image}" alt="${item.title}">
                 </div>
@@ -1350,6 +1990,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="reservation-actions">
                     <a href="${detailsHref}" class="btn-outline-sm">Ver propiedad</a>
                     <a href="${messagesHref}" class="btn-outline-sm">Mensajes</a>
+                    ${cancelAction}
                 </div>
             </article>
         `;
@@ -1359,19 +2000,22 @@ document.addEventListener('DOMContentLoaded', function() {
         reservationsList.innerHTML = buildStatusCard(loadingMessage);
 
         try {
-            const response = await apiFetch('/bookings/user/tenant-1');
+            const response = await apiFetch(`/bookings/user/${encodeURIComponent(TENANT_ID)}`);
             if (!response.ok) {
                 throw new Error('No se pudo obtener reservaciones');
             }
 
             const result = await response.json();
-            const bookings = Array.isArray(result.bookings)
+            const backendBookings = Array.isArray(result.bookings)
                 ? result.bookings
                 : Array.isArray(result.data)
                     ? result.data
                     : Array.isArray(result)
                         ? result
                         : [];
+            const bookings = mergeRentiaBookings(backendBookings)
+                .filter((booking) => (booking.tenantId || TENANT_ID) === TENANT_ID);
+            saveRentiaStoredBookings(mergeRentiaBookings(backendBookings));
             updateTenantBookingsCount(bookings);
 
             if (bookings.length === 0) {
@@ -1391,10 +2035,46 @@ document.addEventListener('DOMContentLoaded', function() {
             reservationsList.innerHTML = hydratedBookings.map(renderReservationCard).join('');
         } catch (error) {
             console.error('Error cargando reservaciones:', error);
-            hideTenantBookingsCount();
-            reservationsList.innerHTML = buildStatusCard(errorMessage) + initialReservationsHtml;
+            const localBookings = getRentiaStoredBookings()
+                .filter((booking) => (booking.tenantId || TENANT_ID) === TENANT_ID);
+            updateTenantBookingsCount(localBookings);
+
+            if (!localBookings.length) {
+                reservationsList.innerHTML = buildStatusCard(emptyMessage);
+                return;
+            }
+
+            const hydratedBookings = await Promise.all(localBookings.map(async (booking) => {
+                const propertyId = booking.propertyId || booking.property?.id;
+                const propertyData = booking.property || getRentiaMockPropertyById(propertyId);
+                return normalizeBooking(booking, propertyData);
+            }));
+            reservationsList.innerHTML = hydratedBookings.map(renderReservationCard).join('');
         }
     }
+
+    reservationsList.addEventListener('click', function(event) {
+        const actionButton = event.target.closest('[data-tenant-action="cancel"]');
+        if (!actionButton) return;
+
+        const booking = getRentiaStoredBookings().find((item) => normalizeRentiaBookingId(item.id) === normalizeRentiaBookingId(actionButton.dataset.bookingId));
+        if (!booking || booking.tenantId !== TENANT_ID) {
+            showRentiaToast('No se pudo cancelar la reserva.', 'error');
+            return;
+        }
+
+        const confirmed = window.confirm('¿Querés cancelar esta reserva? Esta acción cambiará el estado a Cancelada.');
+        if (!confirmed) return;
+
+        const updatedBooking = updateRentiaStoredBookingStatus(actionButton.dataset.bookingId, 'Cancelada');
+        if (!updatedBooking) {
+            showRentiaToast('No se pudo cancelar la reserva.', 'error');
+            return;
+        }
+
+        showRentiaToast('Reserva cancelada correctamente.', 'success');
+        loadReservations();
+    });
 
     loadReservations();
 });
@@ -1406,7 +2086,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const ownerDashboard = document.querySelector('.dashboard-main.owner-dashboard');
     if (!ownerDashboard) return;
 
-    const OWNER_ID = 'owner-1';
+    const OWNER_ID = getCurrentUser()?.id || 'owner-1';
     const listingsGrid = ownerDashboard.querySelector('.listings-grid');
     const reservationsList = ownerDashboard.querySelector('.reservations-received-list');
     const activePropertiesStat = ownerDashboard.querySelector('[data-owner-stat="active-properties"]');
@@ -1461,9 +2141,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function fetchOwnerJson(path) {
-        const response = await apiFetch(path);
-        if (!response.ok) throw new Error(`No se pudo cargar ${path}`);
-        return response.json();
+        try {
+            const response = await apiFetch(path);
+            if (!response.ok) throw new Error(`No se pudo cargar ${path}`);
+            return response.json();
+        } catch (error) {
+            if (path === '/properties') return { properties: RENTIA_MOCK_PROPERTIES };
+            if (path === '/bookings') return { bookings: getRentiaStoredBookings() };
+            throw error;
+        }
     }
 
     async function fetchOwnerProperty(propertyId) {
@@ -1498,12 +2184,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renderOwnerProperty(property, ownerBookings) {
         const propertyBookings = ownerBookings.filter((booking) => propertyMatchesOwnerBooking(property, booking));
-        const statusText = property.status === 'available' ? 'Activa' : property.status || 'Activa';
-        const statusClass = property.status === 'available' ? 'active' : 'paused';
+        const normalizedStatus = normalizeRentiaPropertyStatus(property.status);
+        const isActive = normalizedStatus === 'active';
+        const statusText = isActive ? 'Publicada' : 'Pausada';
+        const statusClass = isActive ? 'active' : 'paused';
         const priceText = property.price ? `${formatOwnerMoney(property.price)}/noche` : 'Precio no disponible';
 
         return `
-            <article class="listing-card">
+            <article class="listing-card" data-property-id="${escapeOwnerHtml(property.id)}">
                 <div class="listing-image">
                     <img src="${escapeOwnerHtml(property.image || fallbackImage)}" alt="${escapeOwnerHtml(property.title)}">
                     <span class="listing-status ${statusClass}">${escapeOwnerHtml(statusText)}</span>
@@ -1513,10 +2201,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p class="property-location">${escapeOwnerHtml(property.location || '')}</p>
                     <div class="listing-stats">
                         <span>${escapeOwnerHtml(priceText)}</span>
+                        <span>${Number(property.maxGuests || 0)} huespedes</span>
                         <span>${propertyBookings.length} reservaciones</span>
                     </div>
                     <div class="listing-actions">
                         <a href="property-detail.html?id=${encodeURIComponent(property.id)}" class="btn-outline-sm">Ver</a>
+                        <a href="create-property.html?edit=${encodeURIComponent(property.id)}" class="btn-outline-sm">Editar</a>
+                        <button type="button" class="btn-outline-sm" data-owner-property-action="${isActive ? 'pause' : 'publish'}" data-property-id="${escapeOwnerHtml(property.id)}">${isActive ? 'Pausar' : 'Publicar'}</button>
+                        <button type="button" class="btn-outline-sm btn-danger-soft" data-owner-property-action="delete" data-property-id="${escapeOwnerHtml(property.id)}">Eliminar</button>
                     </div>
                 </div>
             </article>
@@ -1526,22 +2218,21 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderOwnerReservation(booking, property) {
         const title = booking.title || property?.title || `Propiedad ${booking.propertyId || ''}`.trim();
         const total = getOwnerBookingTotal(booking, property);
-        const status = booking.status || 'Pendiente';
-        const normalizedStatus = status.toLowerCase();
-        const isPending = normalizedStatus.includes('pend');
-        const statusClass = normalizedStatus.includes('confirm')
-            ? 'confirmed'
-            : normalizedStatus.includes('rechaz')
-                ? 'rejected'
-                : isPending ? 'pending' : '';
+        const status = normalizeRentiaBookingStatus(booking.status);
+        const isPending = status === 'Pendiente';
+        const isConfirmed = status === 'Confirmada';
+        const statusClass = getRentiaBookingStatusClass(status);
         const messagesParams = new URLSearchParams();
         messagesParams.set('property', title);
         messagesParams.set('status', status);
         messagesParams.set('checkin', booking.checkin || '');
         messagesParams.set('checkout', booking.checkout || '');
+        const detailHref = booking.propertyId ? `property-detail.html?id=${encodeURIComponent(booking.propertyId)}` : 'property-detail.html';
         const pendingActions = isPending ? `
                     <button class="btn-outline-sm" data-owner-action="confirm" data-booking-id="${escapeOwnerHtml(booking.id)}">Confirmar</button>
                     <button class="btn-outline-sm" data-owner-action="reject" data-booking-id="${escapeOwnerHtml(booking.id)}">Rechazar</button>` : '';
+        const finalizableAction = isConfirmed ? `
+                    <button class="btn-outline-sm" data-owner-action="finish" data-booking-id="${escapeOwnerHtml(booking.id)}">Finalizar</button>` : '';
 
         return `
             <div class="received-item" data-booking-id="${escapeOwnerHtml(booking.id)}">
@@ -1555,7 +2246,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="received-status ${statusClass}">${escapeOwnerHtml(status)}</div>
                 <div class="received-actions">
                     <a href="messages.html?${messagesParams.toString()}" class="btn-outline-sm">Mensajes</a>
+                    <a href="${detailHref}" class="btn-outline-sm">Ver detalle</a>
                     ${pendingActions}
+                    ${finalizableAction}
                 </div>
             </div>
         `;
@@ -1573,23 +2266,38 @@ document.addEventListener('DOMContentLoaded', function() {
             ? (ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length).toFixed(1)
             : 'N/A';
 
-        if (activePropertiesStat) activePropertiesStat.textContent = ownerProperties.length;
+        if (activePropertiesStat) activePropertiesStat.textContent = ownerProperties.filter(isRentiaPropertyVisible).length;
         if (reservationsCountStat) reservationsCountStat.textContent = ownerBookings.length;
         if (estimatedIncomeStat) estimatedIncomeStat.textContent = formatOwnerMoney(estimatedIncome);
         if (averageRatingStat) averageRatingStat.textContent = averageRating;
     }
 
     async function updateOwnerBookingStatus(bookingId, status) {
-        const response = await apiFetch(`/bookings/${encodeURIComponent(bookingId)}/status`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ status })
-        });
+        const normalizedStatus = normalizeRentiaBookingStatus(status);
+        const booking = getRentiaStoredBookings().find((item) => normalizeRentiaBookingId(item.id) === normalizeRentiaBookingId(bookingId));
+        const property = booking ? getRentiaAllProperties().find((item) => normalizeOwnerPropertyId(item.id) === normalizeOwnerPropertyId(booking.propertyId)) : null;
+        if (!booking || (booking.ownerId !== OWNER_ID && property?.ownerId !== OWNER_ID)) {
+            throw new Error('Reserva fuera del alcance del anfitrion');
+        }
 
-        if (!response.ok) throw new Error('No se pudo actualizar la reserva');
-        return response.json();
+        const updatedBooking = updateRentiaStoredBookingStatus(bookingId, normalizedStatus);
+        if (!updatedBooking) throw new Error('Cambio de estado no permitido');
+
+        try {
+            const response = await apiFetch(`/bookings/${encodeURIComponent(bookingId)}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: normalizedStatus })
+            });
+
+            if (!response.ok) throw new Error('No se pudo actualizar la reserva');
+            return response.json();
+        } catch (error) {
+            console.warn('Estado actualizado en localStorage. Backend no disponible:', error);
+            return { booking: updatedBooking };
+        }
     }
 
     async function loadOwnerDashboard() {
@@ -1601,11 +2309,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 fetchOwnerJson('/properties'),
                 fetchOwnerJson('/bookings')
             ]);
-            const properties = getOwnerArray(propertiesResult, 'properties');
-            const bookings = getOwnerArray(bookingsResult, 'bookings');
+            const properties = mergeRentiaProperties(getOwnerArray(propertiesResult, 'properties'));
+            const bookings = mergeRentiaBookings(getOwnerArray(bookingsResult, 'bookings'));
+            saveRentiaStoredBookings(bookings);
             const ownerProperties = properties.filter((property) => property.ownerId === OWNER_ID);
-            const ownerBookings = bookings.filter((booking) => booking.ownerId === OWNER_ID);
             const propertyById = new Map(properties.map((property) => [normalizeOwnerPropertyId(property.id), property]));
+            const ownerPropertyIds = new Set(ownerProperties.map((property) => normalizeOwnerPropertyId(property.id)));
+            const ownerBookings = bookings.filter((booking) => {
+                const bookingProperty = propertyById.get(normalizeOwnerPropertyId(booking.propertyId));
+                return booking.ownerId === OWNER_ID || ownerPropertyIds.has(normalizeOwnerPropertyId(booking.propertyId)) || bookingProperty?.ownerId === OWNER_ID;
+            });
             const hydratedReservations = await Promise.all(ownerBookings.map(async (booking) => {
                 const property = await fetchOwnerProperty(booking.propertyId) || propertyById.get(normalizeOwnerPropertyId(booking.propertyId));
                 if (property?.id) propertyById.set(normalizeOwnerPropertyId(property.id), property);
@@ -1638,17 +2351,61 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!actionButton) return;
 
             const bookingId = actionButton.dataset.bookingId;
-            const nextStatus = actionButton.dataset.ownerAction === 'confirm' ? 'Confirmada' : 'Rechazada';
-            actionButton.disabled = true;
+            const action = actionButton.dataset.ownerAction;
+            const nextStatus = action === 'confirm'
+                ? 'Confirmada'
+                : action === 'finish'
+                    ? 'Finalizada'
+                    : 'Rechazada';
+            setButtonLoading(actionButton, true, 'Actualizando...');
 
             try {
                 await updateOwnerBookingStatus(bookingId, nextStatus);
                 await loadOwnerDashboard();
+                showRentiaToast(`Reserva actualizada a ${nextStatus}.`, 'success');
             } catch (error) {
                 console.error('Error actualizando reserva:', error);
-                actionButton.disabled = false;
-                alert('No se pudo actualizar la reserva.');
+                setButtonLoading(actionButton, false);
+                showRentiaToast('No se pudo actualizar la reserva.', 'error');
             }
+        });
+    }
+
+    if (listingsGrid) {
+        listingsGrid.addEventListener('click', function(event) {
+            const actionButton = event.target.closest('[data-owner-property-action]');
+            if (!actionButton) return;
+
+            const propertyId = actionButton.dataset.propertyId;
+            const action = actionButton.dataset.ownerPropertyAction;
+            const property = getRentiaAllProperties().find((item) => normalizeOwnerPropertyId(item.id) === normalizeOwnerPropertyId(propertyId));
+            if (!property || property.ownerId !== OWNER_ID) {
+                showRentiaToast('No se pudo actualizar la propiedad.', 'error');
+                return;
+            }
+
+            if (action === 'delete') {
+                const confirmed = window.confirm('¿Seguro que quieres eliminar esta propiedad?');
+                if (!confirmed) return;
+
+                if (!deleteRentiaStoredProperty(propertyId)) {
+                    showRentiaToast('No se pudo eliminar la propiedad.', 'error');
+                    return;
+                }
+
+                showRentiaToast('Propiedad eliminada correctamente.', 'success');
+                loadOwnerDashboard();
+                return;
+            }
+
+            const nextStatus = action === 'pause' ? 'paused' : 'active';
+            if (!updateRentiaStoredPropertyStatus(propertyId, nextStatus)) {
+                showRentiaToast('No se pudo actualizar la propiedad.', 'error');
+                return;
+            }
+
+            showRentiaToast(nextStatus === 'paused' ? 'Propiedad pausada.' : 'Propiedad publicada.', 'success');
+            loadOwnerDashboard();
         });
     }
 
@@ -1685,11 +2442,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let activeConversationId = null;
 
     function getLoggedUser() {
-        try {
-            return JSON.parse(localStorage.getItem('alquileres_user'));
-        } catch (error) {
-            return null;
-        }
+        return getCurrentUser();
     }
 
     function escapeMessageHtml(value) {
@@ -2110,6 +2863,331 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Replaced by the localStorage-aware admin module below.
+    // loadAdminDashboard();
+});
+
+/**
+ * Admin Dashboard - System overview from backend data plus localStorage changes.
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    const adminDashboard = document.querySelector('.dashboard-main.admin-dashboard');
+    if (!adminDashboard) return;
+
+    const usersList = adminDashboard.querySelector('.verification-list');
+    const propertiesList = adminDashboard.querySelector('.flagged-list');
+    const bookingsList = adminDashboard.querySelector('.disputes-list');
+    const usersCount = adminDashboard.querySelector('[data-admin-count="users"]');
+    const propertiesCount = adminDashboard.querySelector('[data-admin-count="properties"]');
+    const bookingsCount = adminDashboard.querySelector('[data-admin-count="bookings"]');
+    const userRoleFilter = document.getElementById('adminUserRoleFilter');
+    const propertyStatusFilter = document.getElementById('adminPropertyStatusFilter');
+    const bookingStatusFilter = document.getElementById('adminBookingStatusFilter');
+    const fallbackAvatar = 'https://via.placeholder.com/80x80?text=U';
+    const fallbackImage = 'https://via.placeholder.com/160x120?text=Propiedad';
+    const fallbackAdminUsers = [
+        { id: 'tenant-1', name: 'Juan Perez', email: 'juan.perez@example.com', role: 'tenant' },
+        { id: 'owner-1', name: 'Maria Gonzalez', email: 'maria.gonzalez@example.com', role: 'owner' },
+        { id: 'admin-1', name: 'Administrador', email: 'admin@example.com', role: 'admin' }
+    ];
+    const adminState = { users: [], properties: [], bookings: [] };
+
+    function escapeAdminHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function getAdminArray(result, key) {
+        if (Array.isArray(result?.[key])) return result[key];
+        if (Array.isArray(result?.data)) return result.data;
+        if (Array.isArray(result)) return result;
+        return [];
+    }
+
+    function normalizeAdminRole(role) {
+        const normalized = String(role || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase();
+        if (normalized.includes('owner') || normalized.includes('anfit')) return 'owner';
+        if (normalized.includes('admin')) return 'admin';
+        return 'tenant';
+    }
+
+    function getAdminRoleLabel(role) {
+        const normalizedRole = normalizeAdminRole(role);
+        if (normalizedRole === 'owner') return 'Anfitrion';
+        if (normalizedRole === 'admin') return 'Administrador';
+        return 'Huesped';
+    }
+
+    function formatAdminMoney(value) {
+        return '$' + Number(value || 0).toLocaleString('es-MX');
+    }
+
+    function formatAdminDate(dateString) {
+        if (!dateString) return 'Sin fecha';
+        const date = new Date(dateString + 'T00:00:00');
+        if (Number.isNaN(date.getTime())) return dateString;
+        const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+    }
+
+    function getAdminNights(booking) {
+        if (booking.nights) return Number(booking.nights);
+        if (!booking.checkin || !booking.checkout) return 0;
+        const start = new Date(booking.checkin + 'T00:00:00');
+        const end = new Date(booking.checkout + 'T00:00:00');
+        const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+        return nights > 0 ? nights : 0;
+    }
+
+    function buildAdminStatus(message) {
+        return `<div class="admin-dashboard-status">${escapeAdminHtml(message)}</div>`;
+    }
+
+    async function fetchAdminJson(path) {
+        try {
+            const response = await apiFetch(path);
+            if (!response.ok) throw new Error(`No se pudo cargar ${path}`);
+            return response.json();
+        } catch (error) {
+            console.warn(`Panel admin usando datos locales para ${path}:`, error);
+            return null;
+        }
+    }
+
+    function setAdminStat(key, value) {
+        const stat = adminDashboard.querySelector(`[data-admin-stat="${key}"]`);
+        if (stat) stat.textContent = value;
+    }
+
+    function getAdminUserName(user) {
+        return [user.name, user.lastname].filter(Boolean).join(' ') || user.fullName || user.email || user.id || 'Usuario';
+    }
+
+    function getAdminUserId(user) {
+        return user.id || user.userId || user.email || getAdminUserName(user);
+    }
+
+    function getAdminUserDate(user) {
+        return user.createdAt || user.registeredAt || user.registrationDate || user.date || '';
+    }
+
+    function mergeAdminUsers(users) {
+        const usersById = new Map();
+        [...fallbackAdminUsers, ...users].forEach((user) => {
+            const id = getAdminUserId(user);
+            if (!id) return;
+            usersById.set(id, { ...user, id, role: normalizeAdminRole(user.role) });
+        });
+        const storedUser = getStoredUser();
+        if (storedUser?.id && !usersById.has(storedUser.id)) {
+            usersById.set(storedUser.id, { ...storedUser, role: normalizeAdminRole(storedUser.role) });
+        }
+        return Array.from(usersById.values());
+    }
+
+    function getAdminUsersById(users) {
+        const map = new Map();
+        users.forEach((user) => {
+            const id = getAdminUserId(user);
+            map.set(id, user);
+            if (user.email) map.set(user.email, user);
+        });
+        return map;
+    }
+
+    function getAdminPropertiesById(properties) {
+        const map = new Map();
+        properties.forEach((property) => {
+            map.set(normalizeRentiaPropertyId(property.id), property);
+        });
+        return map;
+    }
+
+    function getAdminBookingTotal(booking, property) {
+        if (booking.total) return Number(booking.total);
+        if (booking.totalPrice) return Number(booking.totalPrice);
+        const nights = getAdminNights(booking);
+        return nights && property?.price ? nights * Number(property.price) : 0;
+    }
+
+    function getAdminPropertyStatusLabel(property) {
+        return normalizeRentiaPropertyStatus(property.status) === 'paused' ? 'Pausada' : 'Activa';
+    }
+
+    function getAdminPropertyStatusClass(property) {
+        return normalizeRentiaPropertyStatus(property.status) === 'paused' ? 'paused' : 'active';
+    }
+
+    function getFilteredAdminUsers() {
+        const selectedRole = userRoleFilter?.value || 'all';
+        if (selectedRole === 'all') return adminState.users;
+        return adminState.users.filter((user) => normalizeAdminRole(user.role) === selectedRole);
+    }
+
+    function getFilteredAdminProperties() {
+        const selectedStatus = propertyStatusFilter?.value || 'all';
+        const properties = adminState.properties.filter((property) => normalizeRentiaPropertyStatus(property.status) !== 'deleted');
+        if (selectedStatus === 'all') return properties;
+        return properties.filter((property) => normalizeRentiaPropertyStatus(property.status) === selectedStatus);
+    }
+
+    function getFilteredAdminBookings() {
+        const selectedStatus = bookingStatusFilter?.value || 'all';
+        if (selectedStatus === 'all') return adminState.bookings;
+        return adminState.bookings.filter((booking) => normalizeRentiaBookingStatus(booking.status) === selectedStatus);
+    }
+
+    function renderAdminUser(user) {
+        const roleLabel = getAdminRoleLabel(user.role);
+        const registeredDate = getAdminUserDate(user);
+        return `
+            <div class="verification-item">
+                <img src="${escapeAdminHtml(user.avatar || fallbackAvatar)}" alt="${escapeAdminHtml(getAdminUserName(user))}" class="verification-avatar">
+                <div class="verification-details">
+                    <h4>${escapeAdminHtml(getAdminUserName(user))}</h4>
+                    <p>${escapeAdminHtml(user.email || 'Sin email')} · ${escapeAdminHtml(roleLabel)}${registeredDate ? ` · Registro: ${escapeAdminHtml(formatAdminDate(registeredDate))}` : ''}</p>
+                </div>
+                <div class="verification-actions">
+                    <span class="admin-status-badge active">${escapeAdminHtml(user.status || 'Activo')}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderAdminProperty(property, usersById) {
+        const owner = usersById.get(property.ownerId);
+        const statusLabel = getAdminPropertyStatusLabel(property);
+        const statusClass = getAdminPropertyStatusClass(property);
+        return `
+            <div class="flagged-item">
+                <img src="${escapeAdminHtml(property.image || fallbackImage)}" alt="${escapeAdminHtml(property.title)}" class="flagged-image">
+                <div class="flagged-details">
+                    <h4>${escapeAdminHtml(property.title || 'Propiedad')}</h4>
+                    <p>Anfitrion: ${escapeAdminHtml(owner ? getAdminUserName(owner) : property.ownerId || 'Sin anfitrion')}</p>
+                    <span class="flagged-reason">${escapeAdminHtml(property.location || 'Sin ubicacion')} · ${escapeAdminHtml(formatAdminMoney(property.price))}/noche</span>
+                </div>
+                <div class="flagged-actions">
+                    <span class="admin-status-badge ${statusClass}">${escapeAdminHtml(statusLabel)}</span>
+                    <a href="property-detail.html?id=${encodeURIComponent(property.id)}" class="btn-outline-sm">Ver</a>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderAdminBooking(booking, propertiesById, usersById) {
+        const property = propertiesById.get(normalizeRentiaPropertyId(booking.propertyId));
+        const tenant = usersById.get(booking.tenantId);
+        const title = booking.title || booking.propertyTitle || property?.title || booking.propertyId || 'Propiedad';
+        const tenantLabel = tenant ? getAdminUserName(tenant) : booking.tenantName || booking.guestName || booking.tenantId || 'Sin huesped';
+        const total = getAdminBookingTotal(booking, property);
+        const status = normalizeRentiaBookingStatus(booking.status);
+        const statusClass = getRentiaBookingStatusClass(status);
+        return `
+            <div class="dispute-item">
+                <div class="dispute-header">
+                    <span class="dispute-id">Reserva ${escapeAdminHtml(booking.id || 'sin ID')}</span>
+                    <span class="admin-status-badge ${statusClass}">${escapeAdminHtml(status)}</span>
+                </div>
+                <div class="dispute-parties">
+                    <span class="party">${escapeAdminHtml(title)}</span>
+                    <span class="vs">·</span>
+                    <span class="party">Huesped: ${escapeAdminHtml(tenantLabel)}</span>
+                </div>
+                <p class="dispute-issue">${escapeAdminHtml(formatAdminDate(booking.checkin))} - ${escapeAdminHtml(formatAdminDate(booking.checkout))} · Total estimado: ${escapeAdminHtml(formatAdminMoney(total))}</p>
+            </div>
+        `;
+    }
+
+    function updateAdminStats() {
+        const propertiesById = getAdminPropertiesById(adminState.properties);
+        const activeProperties = adminState.properties.filter((property) => normalizeRentiaPropertyStatus(property.status) === 'active');
+        const pausedProperties = adminState.properties.filter((property) => normalizeRentiaPropertyStatus(property.status) === 'paused');
+        const pendingBookings = adminState.bookings.filter((booking) => normalizeRentiaBookingStatus(booking.status) === 'Pendiente');
+        const confirmedBookings = adminState.bookings.filter((booking) => normalizeRentiaBookingStatus(booking.status) === 'Confirmada');
+        const closedBookings = adminState.bookings.filter((booking) => {
+            const status = normalizeRentiaBookingStatus(booking.status);
+            return status === 'Cancelada' || status === 'Rechazada';
+        });
+        const estimatedRevenue = adminState.bookings.reduce((sum, booking) => {
+            const property = propertiesById.get(normalizeRentiaPropertyId(booking.propertyId));
+            return sum + getAdminBookingTotal(booking, property);
+        }, 0);
+
+        setAdminStat('total-users', adminState.users.length);
+        setAdminStat('total-tenants', adminState.users.filter((user) => normalizeAdminRole(user.role) === 'tenant').length);
+        setAdminStat('total-owners', adminState.users.filter((user) => normalizeAdminRole(user.role) === 'owner').length);
+        setAdminStat('total-properties', adminState.properties.length);
+        setAdminStat('active-properties', activeProperties.length);
+        setAdminStat('paused-properties', pausedProperties.length);
+        setAdminStat('total-bookings', adminState.bookings.length);
+        setAdminStat('pending-bookings', pendingBookings.length);
+        setAdminStat('confirmed-bookings', confirmedBookings.length);
+        setAdminStat('closed-bookings', closedBookings.length);
+        setAdminStat('estimated-revenue', formatAdminMoney(estimatedRevenue));
+    }
+
+    function renderAdminDashboard() {
+        const usersById = getAdminUsersById(adminState.users);
+        const propertiesById = getAdminPropertiesById(adminState.properties);
+        const filteredUsers = getFilteredAdminUsers();
+        const filteredProperties = getFilteredAdminProperties();
+        const filteredBookings = getFilteredAdminBookings();
+
+        updateAdminStats();
+
+        if (usersCount) usersCount.textContent = `${filteredUsers.length} usuarios`;
+        if (propertiesCount) propertiesCount.textContent = `${filteredProperties.length} propiedades`;
+        if (bookingsCount) bookingsCount.textContent = `${filteredBookings.length} reservas`;
+
+        if (usersList) {
+            usersList.innerHTML = filteredUsers.length
+                ? filteredUsers.map(renderAdminUser).join('')
+                : buildAdminStatus('No hay usuarios para el filtro seleccionado.');
+        }
+
+        if (propertiesList) {
+            propertiesList.innerHTML = filteredProperties.length
+                ? filteredProperties.map((property) => renderAdminProperty(property, usersById)).join('')
+                : buildAdminStatus('No hay propiedades para el filtro seleccionado.');
+        }
+
+        if (bookingsList) {
+            bookingsList.innerHTML = filteredBookings.length
+                ? filteredBookings.map((booking) => renderAdminBooking(booking, propertiesById, usersById)).join('')
+                : buildAdminStatus('No hay reservas para el filtro seleccionado.');
+        }
+    }
+
+    async function loadAdminDashboard() {
+        if (usersList) usersList.innerHTML = buildAdminStatus('Cargando usuarios...');
+        if (propertiesList) propertiesList.innerHTML = buildAdminStatus('Cargando propiedades...');
+        if (bookingsList) bookingsList.innerHTML = buildAdminStatus('Cargando reservas...');
+
+        const [usersResult, propertiesResult, bookingsResult] = await Promise.all([
+            fetchAdminJson('/auth/users'),
+            fetchAdminJson('/properties'),
+            fetchAdminJson('/bookings')
+        ]);
+
+        adminState.users = mergeAdminUsers(getAdminArray(usersResult, 'users'));
+        adminState.properties = mergeRentiaProperties(getAdminArray(propertiesResult, 'properties'))
+            .filter((property) => normalizeRentiaPropertyStatus(property.status) !== 'deleted');
+        adminState.bookings = mergeRentiaBookings(getAdminArray(bookingsResult, 'bookings'));
+
+        renderAdminDashboard();
+    }
+
+    [userRoleFilter, propertyStatusFilter, bookingStatusFilter].forEach((filter) => {
+        if (filter) filter.addEventListener('change', renderAdminDashboard);
+    });
+
     loadAdminDashboard();
 });
 
@@ -2122,6 +3200,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const submitButton = document.getElementById('createPropertySubmit');
     const message = document.getElementById('createPropertyMessage');
+    const editPropertyId = new URLSearchParams(window.location.search).get('edit');
+    const editingProperty = editPropertyId ? getRentiaAllProperties().find((property) => normalizeRentiaPropertyId(property.id) === normalizeRentiaPropertyId(editPropertyId)) : null;
 
     function showCreatePropertyMessage(text) {
         if (!message) return;
@@ -2148,6 +3228,42 @@ document.addEventListener('DOMContentLoaded', function() {
             .map((checkbox) => checkbox.value);
     }
 
+    function setCreatePropertyValue(id, value) {
+        const field = document.getElementById(id);
+        if (field) field.value = value ?? '';
+    }
+
+    function prefillEditProperty() {
+        if (!editingProperty) return;
+
+        const title = document.querySelector('.create-property-main .welcome-content h1');
+        const subtitle = document.querySelector('.create-property-main .welcome-content p');
+        const sectionTitle = document.querySelector('.create-property-section .section-title');
+
+        if (title) title.textContent = 'Editar propiedad';
+        if (subtitle) subtitle.textContent = 'Actualiza los datos principales de tu alojamiento.';
+        if (sectionTitle) sectionTitle.textContent = 'Datos de la propiedad';
+        if (submitButton) submitButton.textContent = 'Guardar cambios';
+
+        setCreatePropertyValue('propertyTitle', editingProperty.title || '');
+        setCreatePropertyValue('propertyLocation', editingProperty.location || '');
+        setCreatePropertyValue('propertyType', normalizeRentiaPropertyType(editingProperty.type));
+        setCreatePropertyValue('propertyCity', editingProperty.city || 'Ciudad de Mexico');
+        setCreatePropertyValue('propertyCountry', editingProperty.country || 'Mexico');
+        setCreatePropertyValue('propertyDescription', Array.isArray(editingProperty.description) ? editingProperty.description.join('\n\n') : editingProperty.description || '');
+        setCreatePropertyValue('propertyPrice', editingProperty.price || '');
+        setCreatePropertyValue('propertyGuests', editingProperty.maxGuests || '');
+        setCreatePropertyValue('propertyBedrooms', editingProperty.bedrooms ?? 0);
+        setCreatePropertyValue('propertyBathrooms', editingProperty.bathrooms || 1);
+        setCreatePropertyValue('propertyImage', editingProperty.image || '');
+        setCreatePropertyValue('propertyStatus', normalizeRentiaPropertyStatus(editingProperty.status));
+
+        const amenities = Array.isArray(editingProperty.amenities) ? editingProperty.amenities : [];
+        createPropertyForm.querySelectorAll('input[name="amenities"]').forEach((checkbox) => {
+            checkbox.checked = amenities.includes(checkbox.value);
+        });
+    }
+
     function validateCreateProperty(payload) {
         if (!payload.title || !payload.location || !payload.city || !payload.country || !payload.description?.[0]) {
             return false;
@@ -2159,6 +3275,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
         return payload.price > 0 && payload.maxGuests > 0 && payload.bedrooms >= 0 && payload.bathrooms > 0;
     }
+
+    if (editPropertyId && !editingProperty) {
+        showCreatePropertyMessage('No encontramos la propiedad para editar.');
+    }
+
+    if (editingProperty && editingProperty.ownerId !== getCurrentUser()?.id) {
+        showCreatePropertyMessage('No puedes editar una propiedad de otro anfitrion.');
+        if (submitButton) submitButton.disabled = true;
+        return;
+    }
+
+    prefillEditProperty();
 
     createPropertyForm.addEventListener('submit', async function(event) {
         event.preventDefault();
@@ -2176,6 +3304,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const payload = {
+            id: editingProperty?.id || `local-property-${Date.now()}`,
             title: getCreatePropertyValue('propertyTitle'),
             location: getCreatePropertyValue('propertyLocation'),
             city: getCreatePropertyValue('propertyCity'),
@@ -2190,8 +3319,10 @@ document.addEventListener('DOMContentLoaded', function() {
             amenities: getSelectedAmenities(),
             image: getCreatePropertyValue('propertyImage'),
             gallery: [getCreatePropertyValue('propertyImage')],
-            status: getCreatePropertyValue('propertyStatus') || 'active',
+            status: normalizeRentiaPropertyStatus(getCreatePropertyValue('propertyStatus')),
             ownerId: user.id,
+            rating: editingProperty?.rating || 0,
+            reviewCount: editingProperty?.reviewCount || 0,
             host: {
                 name: user.name || 'Anfitrion',
                 verified: false,
@@ -2207,30 +3338,39 @@ document.addEventListener('DOMContentLoaded', function() {
         const originalButtonHtml = submitButton?.innerHTML;
         if (submitButton) {
             submitButton.disabled = true;
-            submitButton.textContent = 'Publicando...';
+            submitButton.classList.add('is-loading');
+            submitButton.textContent = editingProperty ? 'Guardando...' : 'Publicando...';
         }
 
         try {
-            const response = await apiFetch('/properties', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
+            const savedProperty = upsertRentiaStoredProperty({
+                ...editingProperty,
+                ...payload,
+                updatedAt: new Date().toISOString(),
+                createdAt: editingProperty?.createdAt || new Date().toISOString()
             });
 
-            const result = await response.json().catch(() => null);
-            if (!response.ok || !result?.success) {
-                throw new Error(result?.message || 'Create property failed');
+            try {
+                await apiFetch(editingProperty ? `/properties/${encodeURIComponent(savedProperty.id)}` : '/properties', {
+                    method: editingProperty ? 'PATCH' : 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(savedProperty)
+                });
+            } catch (backendError) {
+                console.warn('Propiedad guardada en localStorage. Backend no disponible:', backendError);
             }
 
+            showCreatePropertyMessage(editingProperty ? 'Propiedad actualizada correctamente.' : 'Propiedad publicada correctamente.');
             window.location.href = 'owner-dashboard.html';
         } catch (error) {
             console.error('Error publicando propiedad:', error);
-            showCreatePropertyMessage('No pudimos publicar la propiedad. Verifica los datos e intenta nuevamente.');
+            showCreatePropertyMessage('No pudimos guardar la propiedad. Verifica los datos e intenta nuevamente.');
         } finally {
             if (submitButton) {
                 submitButton.disabled = false;
+                submitButton.classList.remove('is-loading');
                 submitButton.innerHTML = originalButtonHtml;
             }
         }
@@ -2247,54 +3387,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!recommendationForm || !resultsContainer || !statusBox) return;
 
     const LAST_RECOMMENDATION_KEY = 'rentia_last_recommendation';
-    const mockRecommendationProperties = [
-        {
-            id: '1',
-            title: 'Apartamento moderno en Polanco',
-            location: 'Polanco, Ciudad de Mexico',
-            ownerId: 'owner-1',
-            price: 2500,
-            currency: 'MXN',
-            image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop',
-            rating: 4.8,
-            status: 'available',
-            type: 'apartamento',
-            maxGuests: 4,
-            amenities: ['WiFi de alta velocidad', 'Smart TV', 'Cocina equipada', 'Aire acondicionado', 'Lavadora', 'Estacionamiento'],
-            host: { name: 'Maria Gonzalez' }
-        },
-        {
-            id: '2',
-            title: 'Casa espaciosa en Roma Norte',
-            location: 'Roma Norte, Ciudad de Mexico',
-            ownerId: 'owner-2',
-            price: 3200,
-            currency: 'MXN',
-            image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop',
-            rating: 4.7,
-            status: 'available',
-            type: 'casa',
-            maxGuests: 6,
-            amenities: ['Jardin privado', 'Cocina equipada', 'WiFi', 'Lavadora', 'Estacionamiento'],
-            host: { name: 'Javier Rodriguez' }
-        },
-        {
-            id: '3',
-            title: 'Loft centrico en Centro Historico',
-            location: 'Centro Historico, Ciudad de Mexico',
-            ownerId: 'owner-3',
-            price: 2200,
-            currency: 'MXN',
-            image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop',
-            rating: 4.9,
-            status: 'available',
-            type: 'loft',
-            maxGuests: 2,
-            amenities: ['WiFi', 'Smart TV', 'Cocina equipada', 'Lavadora', 'Aire acondicionado'],
-            host: { name: 'Lucia Mendez' }
-        }
-    ];
-    let availableProperties = mockRecommendationProperties;
+    let availableProperties = getRentiaVisibleProperties();
 
     function escapeRecommendationHtml(value) {
         return String(value || '')
@@ -2502,7 +3595,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="recommendation-tags">${tagHtml || '<span class="recommendation-tag">Disponible</span>'}</div>
                         <p class="recommendation-explanation">${escapeRecommendationHtml(explanation)}</p>
                         <div class="recommendation-actions">
-                            <a href="property-detail.html?id=${propertyId}" class="btn-secondary">Ver detalle</a>
+                            <a href="property-detail.html?id=${propertyId}&source=assistant" class="btn-secondary">Ver detalle</a>
                             <a href="${escapeRecommendationHtml(buildBookingUrl(property))}" class="btn-primary">Reservar</a>
                         </div>
                     </div>
@@ -2544,7 +3637,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function loadRecommendationProperties() {
         // El recomendador debe funcionar en Netlify y en archivos estaticos, sin backend local.
-        availableProperties = mockRecommendationProperties;
+        availableProperties = getRentiaVisibleProperties();
         recommendationForm.dataset.loaded = 'true';
         setRecommendationStatus('');
     }
@@ -2552,6 +3645,7 @@ document.addEventListener('DOMContentLoaded', function() {
     recommendationForm.addEventListener('submit', function(event) {
         event.preventDefault();
 
+        const submitButton = recommendationForm.querySelector('button[type="submit"], .btn-primary');
         const preferences = getUserPreferences();
         if (!preferences.budget || preferences.budget <= 0 || !preferences.guests || preferences.guests <= 0) {
             setRecommendationStatus('Completá presupuesto y cantidad de huéspedes para recomendar.');
@@ -2562,6 +3656,9 @@ document.addEventListener('DOMContentLoaded', function() {
             setRecommendationStatus('Todavía no hay propiedades cargadas para recomendar.');
             return;
         }
+
+        setButtonLoading(submitButton, true, 'Calculando...');
+        setRecommendationStatus('Calculando recomendaciones...');
 
         const recommendations = availableProperties
             .map(property => {
@@ -2582,6 +3679,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setRecommendationStatus(recommendations.length ? '' : 'No hay coincidencias claras para esas preferencias.');
         renderRecommendations(recommendations);
         saveLastRecommendation(preferences, recommendations);
+        setButtonLoading(submitButton, false);
     });
 
     prefillLastPreferences();

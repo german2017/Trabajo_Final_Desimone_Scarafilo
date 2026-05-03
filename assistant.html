@@ -60,19 +60,19 @@
 
                     <!-- Quick Suggestions -->
                     <div class="quick-suggestions">
-                        <button class="suggestion-chip">
+                        <button type="button" class="suggestion-chip" data-assistant-suggestion="Buscar propiedades en Polanco para 2 huéspedes">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
                             Buscar propiedades
                         </button>
-                        <button class="suggestion-chip">
+                        <button type="button" class="suggestion-chip" data-assistant-suggestion="Quiero consultar mi reservación">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                             Mi reservación
                         </button>
-                        <button class="suggestion-chip">
+                        <button type="button" class="suggestion-chip" data-assistant-suggestion="Necesito contactar al anfitrión">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                             Contactar anfitrión
                         </button>
-                        <button class="suggestion-chip">
+                        <button type="button" class="suggestion-chip" data-assistant-suggestion="Quiero conocer las políticas de cancelación">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                             Políticas de cancelación
                         </button>
@@ -150,7 +150,7 @@
                     <div class="assistant-input">
                         <div class="input-wrapper">
                             <input type="text" placeholder="Escribe tu mensaje..." class="assistant-text-input">
-                            <button class="assistant-send-btn">
+                            <button type="button" class="assistant-send-btn" id="assistantSendBtn">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <line x1="22" y1="2" x2="11" y2="13"/>
                                     <polygon points="22 2 15 22 11 13 2 9 22 2"/>
@@ -229,7 +229,7 @@
                             </label>
                         </fieldset>
 
-                        <button type="submit" class="btn-primary">Buscar recomendaciones</button>
+                        <button type="submit" class="btn-primary" id="recommendationSubmit">Buscar recomendaciones</button>
                     </form>
 
                     <div id="recommendationStatus" class="recommendation-status" aria-live="polite"></div>

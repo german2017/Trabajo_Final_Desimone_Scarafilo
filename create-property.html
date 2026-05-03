@@ -65,10 +65,10 @@
                             <label for="propertyType" class="form-label">Tipo de propiedad</label>
                             <select id="propertyType" class="form-select" required>
                                 <option value="">Seleccionar</option>
-                                <option value="apartment">Apartamento</option>
-                                <option value="house">Casa</option>
+                                <option value="apartamento">Apartamento</option>
+                                <option value="casa">Casa</option>
                                 <option value="loft">Loft</option>
-                                <option value="studio">Estudio</option>
+                                <option value="estudio">Estudio</option>
                             </select>
                         </div>
                     </div>
@@ -143,7 +143,13 @@
                         <input type="url" id="propertyImage" class="form-input" placeholder="https://..." required>
                     </div>
 
-                    <input type="hidden" id="propertyStatus" value="active">
+                    <div class="form-group">
+                        <label for="propertyStatus" class="form-label">Disponibilidad</label>
+                        <select id="propertyStatus" class="form-select" required>
+                            <option value="active">Publicada</option>
+                            <option value="paused">Pausada</option>
+                        </select>
+                    </div>
 
                     <p class="create-property-message" id="createPropertyMessage" aria-live="polite"></p>
 

@@ -88,6 +88,69 @@
                         <span class="stat-label">Ingresos estimados</span>
                     </div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-icon warning">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" data-admin-stat="total-tenants">...</span>
+                        <span class="stat-label">Huéspedes</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon success">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" data-admin-stat="total-owners">...</span>
+                        <span class="stat-label">Anfitriones</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon success">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" data-admin-stat="active-properties">...</span>
+                        <span class="stat-label">Propiedades activas</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon danger">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" data-admin-stat="paused-properties">...</span>
+                        <span class="stat-label">Propiedades pausadas</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon warning">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" data-admin-stat="pending-bookings">...</span>
+                        <span class="stat-label">Reservas pendientes</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon success">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" data-admin-stat="confirmed-bookings">...</span>
+                        <span class="stat-label">Reservas confirmadas</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon danger">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-value" data-admin-stat="closed-bookings">...</span>
+                        <span class="stat-label">Canceladas/Rechazadas</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Dashboard Grid -->
@@ -97,6 +160,15 @@
                     <div class="section-header">
                         <h2 class="section-title">Usuarios</h2>
                         <span class="section-badge" data-admin-count="users">...</span>
+                    </div>
+                    <div class="admin-filter-row">
+                        <label for="adminUserRoleFilter">Rol</label>
+                        <select id="adminUserRoleFilter" class="form-select">
+                            <option value="all">Todos</option>
+                            <option value="tenant">Huéspedes</option>
+                            <option value="owner">Anfitriones</option>
+                            <option value="admin">Administradores</option>
+                        </select>
                     </div>
                     
                     <div class="verification-list">
@@ -111,6 +183,17 @@
                         <h2 class="section-title">Reservas</h2>
                         <span class="section-badge" data-admin-count="bookings">...</span>
                     </div>
+                    <div class="admin-filter-row">
+                        <label for="adminBookingStatusFilter">Estado</label>
+                        <select id="adminBookingStatusFilter" class="form-select">
+                            <option value="all">Todas</option>
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="Confirmada">Confirmada</option>
+                            <option value="Rechazada">Rechazada</option>
+                            <option value="Cancelada">Cancelada</option>
+                            <option value="Finalizada">Finalizada</option>
+                        </select>
+                    </div>
                     
                     <div class="disputes-list">
                         <div class="admin-dashboard-status">Cargando reservas...</div>
@@ -123,6 +206,14 @@
                     <div class="section-header">
                         <h2 class="section-title">Propiedades</h2>
                         <span class="section-badge" data-admin-count="properties">...</span>
+                    </div>
+                    <div class="admin-filter-row">
+                        <label for="adminPropertyStatusFilter">Estado</label>
+                        <select id="adminPropertyStatusFilter" class="form-select">
+                            <option value="all">Todas</option>
+                            <option value="active">Activas</option>
+                            <option value="paused">Pausadas</option>
+                        </select>
                     </div>
                     
                     <div class="flagged-list">

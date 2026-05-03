@@ -1,30 +1,42 @@
 [
   {
     "id": "tenant-1",
-    "name": "Juan Pérez",
+    "name": "Juan",
+    "lastname": "Pérez",
     "email": "juan.perez@example.com",
     "password": "password123",
-    "role": "tenant"
+    "role": "tenant",
+    "status": "Activo",
+    "createdAt": "2026-03-15"
   },
   {
     "id": "owner-1",
-    "name": "María González",
+    "name": "María",
+    "lastname": "González",
     "email": "maria.gonzalez@example.com",
     "password": "password123",
-    "role": "owner"
+    "role": "owner",
+    "status": "Activo",
+    "createdAt": "2026-02-20"
   },
   {
     "id": "admin-1",
     "name": "Administrador",
+    "lastname": "RentIA",
     "email": "admin@example.com",
     "password": "admin123",
-    "role": "admin"
+    "role": "admin",
+    "status": "Activo",
+    "createdAt": "2026-01-10"
   },
   {
-    "id": "1777677356613",
-    "name": "German",
+    "id": "tenant-demo-2",
+    "name": "Germán",
+    "lastname": "Scarafilo",
     "email": "scarafiloutn@gmail.com",
     "password": "pepe",
-    "role": "tenant"
+    "role": "tenant",
+    "status": "Activo",
+    "createdAt": "2026-04-18"
   }
 ]

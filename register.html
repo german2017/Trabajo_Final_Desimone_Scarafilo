@@ -235,6 +235,7 @@
             }
 
             registerButton.disabled = true;
+            registerButton.classList.add('is-loading');
             const originalButtonText = registerButton.textContent;
             registerButton.textContent = 'Creando cuenta...';
 
@@ -276,6 +277,7 @@
                 showRegisterMessage('No pudimos crear la cuenta.');
             } finally {
                 registerButton.disabled = false;
+                registerButton.classList.remove('is-loading');
                 registerButton.textContent = originalButtonText;
             }
         });

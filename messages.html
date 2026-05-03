@@ -41,7 +41,7 @@
                 <aside class="conversations-sidebar">
                     <div class="sidebar-header">
                         <h2>Mensajes</h2>
-                        <button class="new-chat-btn">
+                <button type="button" class="new-chat-btn" id="newChatBtn">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
                         </button>
                     </div>
@@ -132,13 +132,13 @@
                             <span class="chat-status">Anfitrión verificado · Superanfitrión</span>
                         </div>
                         <div class="chat-actions">
-                            <button class="chat-action-btn" title="Llamar">
+                    <button type="button" class="chat-action-btn" title="Llamar" data-message-action="call">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                             </button>
-                            <button class="chat-action-btn" title="Videollamada">
+                    <button type="button" class="chat-action-btn" title="Videollamada" data-message-action="video">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
                             </button>
-                            <button class="chat-action-btn" title="Más opciones">
+                    <button type="button" class="chat-action-btn" title="Más opciones" data-message-action="more">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
                             </button>
                         </div>
@@ -202,14 +202,14 @@
 
                     <!-- Message Input -->
                     <div class="chat-input">
-                        <button class="input-action" title="Adjuntar archivo">
+                    <button type="button" class="input-action" title="Adjuntar archivo" data-message-action="attach">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
                         </button>
                         <input type="text" placeholder="Escribe un mensaje..." class="message-input">
-                        <button class="input-action" title="Emoji">
+                    <button type="button" class="input-action" title="Emoji" data-message-action="emoji">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
                         </button>
-                        <button class="send-btn">
+                    <button type="button" class="send-btn" id="messageSendBtn">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                         </button>
                     </div>

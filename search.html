@@ -93,7 +93,7 @@ Requirements:
                 <aside class="filters-sidebar">
                     <div class="filters-header">
                         <h3>Filtros</h3>
-                        <button class="clear-filters">Limpiar todo</button>
+                        <button type="button" class="clear-filters" id="clearFiltersBtn">Limpiar todo</button>
                     </div>
 
                     <div class="filter-section">
@@ -239,15 +239,15 @@ Requirements:
 
                     <!-- Pagination -->
                     <div class="pagination" id="results-pagination">
-                        <button class="pagination-btn" disabled>
+                        <button type="button" class="pagination-btn" disabled data-page-action="previous">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
                         </button>
                         <span class="pagination-current">1</span>
-                        <button class="pagination-btn">2</button>
-                        <button class="pagination-btn">3</button>
+                        <button type="button" class="pagination-btn" data-page="2">2</button>
+                        <button type="button" class="pagination-btn" data-page="3">3</button>
                         <span class="pagination-ellipsis">...</span>
-                        <button class="pagination-btn">26</button>
-                        <button class="pagination-btn">
+                        <button type="button" class="pagination-btn" data-page="26">26</button>
+                        <button type="button" class="pagination-btn" data-page-action="next">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
                         </button>
                     </div>

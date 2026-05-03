@@ -2046,6 +2046,34 @@ img {
     transform: translateY(-1px);
 }
 
+.btn-primary:disabled,
+.btn-outline-sm:disabled,
+.btn-secondary:disabled {
+    cursor: not-allowed;
+    opacity: 0.72;
+    transform: none;
+}
+
+.is-loading {
+    position: relative;
+}
+
+.is-loading::after {
+    content: "";
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: rentia-spin 0.75s linear infinite;
+}
+
+@keyframes rentia-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .btn-text {
     color: var(--primary-color);
     font-weight: 600;
@@ -2242,10 +2270,15 @@ img {
     text-align: center;
     font-size: 1rem;
     color: var(--text-medium);
-    padding: 2rem 0;
+    padding: 1.25rem 1.5rem;
+    background: var(--white);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.04);
 }
 
-.owner-dashboard-status {
+.owner-dashboard-status,
+.system-empty-state {
     width: 100%;
     padding: 1rem 1.1rem;
     border-radius: var(--radius-lg);
@@ -2263,6 +2296,118 @@ img {
     border: 1px solid rgba(0, 0, 0, 0.06);
     color: var(--text-medium);
     font-size: 0.95rem;
+}
+
+.system-feedback {
+    padding: 0.85rem 1rem;
+    margin: 1rem 0;
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.system-feedback.error {
+    background: rgba(185, 28, 28, 0.08);
+    color: #B91C1C;
+}
+
+.system-feedback.success {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--success);
+}
+
+.rentia-toast-container {
+    position: fixed;
+    z-index: 2000;
+    top: 1rem;
+    right: 1rem;
+    display: grid;
+    gap: 0.75rem;
+    width: min(360px, calc(100vw - 2rem));
+}
+
+.rentia-toast {
+    padding: 0.9rem 1rem;
+    border-radius: var(--radius-lg);
+    background: var(--white);
+    color: var(--text-dark);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.14);
+    font-size: 0.92rem;
+    font-weight: 600;
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.rentia-toast.success {
+    border-color: rgba(34, 197, 94, 0.28);
+    color: var(--success);
+}
+
+.rentia-toast.error {
+    border-color: rgba(185, 28, 28, 0.28);
+    color: #B91C1C;
+}
+
+.rentia-toast.is-hiding {
+    opacity: 0;
+    transform: translateY(-6px);
+}
+
+.admin-filter-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.admin-filter-row label {
+    color: var(--text-medium);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.admin-filter-row .form-select {
+    width: min(220px, 100%);
+    padding: 0.65rem 0.85rem;
+}
+
+.admin-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.admin-status-badge.pending {
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--warning);
+}
+
+.admin-status-badge.confirmed,
+.admin-status-badge.active {
+    background: rgba(34, 197, 94, 0.12);
+    color: var(--success);
+}
+
+.admin-status-badge.rejected,
+.admin-status-badge.cancelled {
+    background: rgba(185, 28, 28, 0.1);
+    color: #B91C1C;
+}
+
+.admin-status-badge.completed {
+    background: rgba(0, 102, 204, 0.12);
+    color: var(--primary-color);
+}
+
+.admin-status-badge.paused {
+    background: rgba(113, 113, 142, 0.14);
+    color: var(--text-medium);
 }
 
 .create-property-main {
@@ -2786,9 +2931,31 @@ img {
     color: var(--warning);
 }
 
-.received-status.rejected {
+.received-status.rejected,
+.reservation-status.rejected {
     background: rgba(185, 28, 28, 0.1);
     color: #B91C1C;
+}
+
+.received-status.cancelled,
+.reservation-status.cancelled {
+    background: rgba(113, 113, 142, 0.14);
+    color: var(--text-medium);
+}
+
+.received-status.completed,
+.reservation-status.completed {
+    background: rgba(0, 102, 204, 0.12);
+    color: var(--primary-color);
+}
+
+.btn-danger-soft {
+    border-color: rgba(185, 28, 28, 0.24);
+    color: #B91C1C;
+}
+
+.btn-danger-soft:hover {
+    background: rgba(185, 28, 28, 0.08);
 }
 
 .conversation-avatar,
@@ -4430,5 +4597,329 @@ img {
     
     .form-row {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar-container,
+    .navbar-nav,
+    .navbar-actions {
+        gap: 0.75rem;
+    }
+
+    .navbar-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .dashboard-welcome,
+    .section-header,
+    .admin-filter-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .admin-filter-row .form-select,
+    .dashboard-welcome .welcome-actions,
+    .dashboard-welcome .btn-primary,
+    .reservation-actions,
+    .received-actions,
+    .listing-actions,
+    .recommendation-actions {
+        width: 100%;
+    }
+
+    .reservation-actions,
+    .received-actions,
+    .listing-actions,
+    .recommendation-actions {
+        align-items: stretch;
+    }
+
+    .reservation-actions .btn-outline-sm,
+    .received-actions .btn-outline-sm,
+    .listing-actions .btn-outline-sm,
+    .recommendation-actions .btn-primary,
+    .recommendation-actions .btn-secondary {
+        width: 100%;
+    }
+
+    .rentia-toast-container {
+        left: 1rem;
+        right: 1rem;
+        width: auto;
+    }
+}
+
+/* Final visual hardening for demo consistency */
+body {
+    overflow-x: hidden;
+}
+
+button,
+a[class*="btn"],
+.login-link,
+.register-btn,
+.property-link,
+.view-all-link {
+    cursor: pointer;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-outline,
+.btn-outline-sm,
+.register-btn,
+.login-link,
+.property-link {
+    border-radius: var(--radius-lg);
+    transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.btn-outline-sm,
+.login-link,
+.property-link {
+    min-height: 38px;
+    padding: 0.55rem 0.85rem;
+}
+
+.btn-outline-sm:hover,
+.login-link:hover,
+.property-link:hover {
+    background: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.register-btn:hover,
+.btn-secondary:hover,
+.btn-outline:hover,
+.btn-outline-sm:hover {
+    box-shadow: var(--shadow-sm);
+}
+
+.navbar {
+    overflow: visible;
+}
+
+.navbar-brand,
+.navbar-nav,
+.navbar-actions {
+    align-items: center;
+}
+
+.navbar-actions {
+    row-gap: 0.5rem;
+}
+
+.dashboard-section,
+.stat-card,
+.property-card,
+.listing-card,
+.reservation-card,
+.received-item,
+.flagged-item,
+.verification-item,
+.dispute-item,
+.recommendation-result-card,
+.reservation-summary-card,
+.host-summary-card,
+.actions-card,
+.help-card,
+.login-card {
+    overflow: hidden;
+}
+
+.dashboard-section,
+.stat-card,
+.property-card,
+.listing-card,
+.reservation-card,
+.received-item,
+.flagged-item,
+.verification-item,
+.dispute-item,
+.recommendation-result-card {
+    box-shadow: var(--shadow-sm);
+}
+
+.logo-icon,
+.navbar-brand svg {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+}
+
+.btn-primary svg,
+.btn-secondary svg,
+.btn-outline svg,
+.btn-outline-sm svg,
+.btn-text svg,
+.login-link svg,
+.register-btn svg,
+.property-link svg,
+.view-all-link svg,
+.nav-link svg {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+}
+
+.dashboard-section svg,
+.stat-card svg,
+.property-card svg,
+.listing-card svg,
+.reservation-card svg,
+.received-item svg,
+.flagged-item svg,
+.verification-item svg,
+.dispute-item svg,
+.recommendation-result-card svg,
+.admin-search svg {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+}
+
+.stat-icon,
+.action-icon,
+.trust-icon,
+.date-icon,
+.success-icon,
+.ai-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+}
+
+.stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-lg);
+}
+
+.stat-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.action-icon {
+    width: 48px;
+    height: 48px;
+}
+
+.action-icon svg,
+.trust-icon svg,
+.date-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.success-icon,
+.ai-icon {
+    max-width: 48px;
+    max-height: 48px;
+}
+
+.success-icon svg,
+.ai-icon svg {
+    width: 32px;
+    height: 32px;
+}
+
+.admin-search {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.admin-search svg {
+    color: var(--text-light);
+}
+
+.flagged-image,
+.verification-avatar,
+.guest-avatar,
+.conversation-avatar,
+.message-avatar,
+.chat-avatar {
+    flex: 0 0 auto;
+}
+
+.flagged-image {
+    width: 112px;
+    height: 84px;
+    object-fit: cover;
+}
+
+.verification-avatar,
+.guest-avatar,
+.conversation-avatar,
+.message-avatar,
+.chat-avatar {
+    object-fit: cover;
+}
+
+.received-actions,
+.listing-actions,
+.reservation-actions,
+.flagged-actions,
+.verification-actions {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.section-title,
+.property-title,
+.flagged-details h4,
+.verification-details h4,
+.received-details h4,
+.listing-content h3,
+.recommendation-result-header h4 {
+    line-height: 1.25;
+}
+
+.admin-status-badge,
+.received-status,
+.reservation-status,
+.listing-status,
+.user-status {
+    line-height: 1;
+}
+
+@media (max-width: 768px) {
+    .stats-grid,
+    .admin-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .flagged-item,
+    .verification-item,
+    .received-item {
+        align-items: flex-start;
+    }
+
+    .flagged-image {
+        width: 96px;
+        height: 72px;
+    }
+}
+
+@media (max-width: 520px) {
+    .stats-grid,
+    .admin-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .flagged-item,
+    .verification-item,
+    .received-item {
+        flex-direction: column;
+    }
+
+    .flagged-image {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 10;
     }
 }

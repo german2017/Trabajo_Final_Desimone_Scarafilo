@@ -209,6 +209,7 @@
             }
 
             loginButton.disabled = true;
+            loginButton.classList.add('is-loading');
             const originalButtonText = loginButton.textContent;
             loginButton.textContent = 'Ingresando...';
 
@@ -237,11 +238,14 @@
                 };
 
                 localStorage.setItem('alquileres_user', JSON.stringify(user));
-                window.location.href = getDashboardByRole(user.role);
+                window.location.href = typeof getPostLoginRedirect === 'function'
+                    ? getPostLoginRedirect(user.role)
+                    : getDashboardByRole(user.role);
             } catch (error) {
                 showLoginError('No pudimos iniciar sesión. Verifica tus datos.');
             } finally {
                 loginButton.disabled = false;
+                loginButton.classList.remove('is-loading');
                 loginButton.textContent = originalButtonText;
             }
         });

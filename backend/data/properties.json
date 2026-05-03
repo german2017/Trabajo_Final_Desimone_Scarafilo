@@ -3,6 +3,8 @@
     "id": "1",
     "title": "Apartamento moderno en Polanco",
     "location": "Polanco, Ciudad de México",
+    "city": "Ciudad de México",
+    "country": "México",
     "ownerId": "owner-1",
     "price": 2500,
     "currency": "MXN",
@@ -15,12 +17,23 @@
     ],
     "rating": 4.8,
     "reviewCount": 127,
-    "status": "available",
+    "status": "active",
+    "type": "apartamento",
+    "maxGuests": 4,
+    "bedrooms": 2,
+    "bathrooms": 2,
     "description": [
-      "Hermoso apartamento completamente amueblado en el corazón de Polanco. La propiedad cuenta con iluminación natural, acabados de primera calidad y una ubicación privilegiada cerca de restaurantes, tiendas y museos.",
-      "El espacio incluye sala con Smart TV, cocina equipada con electrodomésticos de acero inoxidable, habitación principal con cama king y habitación secundaria con dos camas individuales. Ambos baños tienen ducha y bañera."
+      "Apartamento completamente amueblado en el corazón de Polanco, cerca de restaurantes, tiendas y museos.",
+      "Incluye sala con Smart TV, cocina equipada, aire acondicionado y espacios cómodos para una estadía urbana."
     ],
-    "amenities": ["WiFi de alta velocidad", "Smart TV", "Cocina equipada", "Aire acondicionado", "Lavadora", "Estacionamiento"],
+    "amenities": [
+      "WiFi",
+      "Smart TV",
+      "Cocina equipada",
+      "Aire acondicionado",
+      "Lavadora",
+      "Estacionamiento"
+    ],
     "host": {
       "name": "María González",
       "verified": true,
@@ -29,9 +42,11 @@
   },
   {
     "id": "2",
-    "title": "Casa espaciosa en Roma Norte",
+    "title": "Casa familiar en Roma Norte",
     "location": "Roma Norte, Ciudad de México",
-    "ownerId": "owner-2",
+    "city": "Ciudad de México",
+    "country": "México",
+    "ownerId": "owner-1",
     "price": 3200,
     "currency": "MXN",
     "image": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop",
@@ -41,23 +56,34 @@
     ],
     "rating": 4.7,
     "reviewCount": 89,
-    "status": "available",
+    "status": "active",
+    "type": "casa",
+    "maxGuests": 6,
+    "bedrooms": 3,
+    "bathrooms": 2,
     "description": [
-      "Casa familiar amplia y luminosa con jardín privado en una de las zonas más tranquilas de Roma Norte.",
-      "Cuenta con cocina completa, sala con comedor, tres habitaciones y un patio interior perfecto para reuniones."
+      "Casa amplia y luminosa con jardín privado en una de las zonas más tranquilas de Roma Norte.",
+      "Cuenta con cocina completa, sala comedor, tres habitaciones y patio interior para reuniones."
     ],
-    "amenities": ["Jardín privado", "Cocina equipada", "WiFi", "Lavadora", "Estacionamiento"],
+    "amenities": [
+      "WiFi",
+      "Cocina equipada",
+      "Lavadora",
+      "Estacionamiento"
+    ],
     "host": {
-      "name": "Javier Rodríguez",
-      "verified": false,
-      "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop"
+      "name": "María González",
+      "verified": true,
+      "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop"
     }
   },
   {
     "id": "3",
     "title": "Loft céntrico en Centro Histórico",
     "location": "Centro Histórico, Ciudad de México",
-    "ownerId": "owner-3",
+    "city": "Ciudad de México",
+    "country": "México",
+    "ownerId": "owner-1",
     "price": 2200,
     "currency": "MXN",
     "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop",
@@ -67,16 +93,99 @@
     ],
     "rating": 4.9,
     "reviewCount": 203,
-    "status": "available",
+    "status": "active",
+    "type": "loft",
+    "maxGuests": 2,
+    "bedrooms": 1,
+    "bathrooms": 1,
     "description": [
-      "Loft de diseño con techos altos y mucha luz natural, ubicado a pasos de museos y cafés del Centro Histórico.",
+      "Loft de diseño con techos altos y mucha luz natural, ubicado a pasos de museos y cafés.",
       "Perfecto para parejas o viajeros que buscan una estancia con estilo y ubicación premium."
     ],
-    "amenities": ["WiFi", "Smart TV", "Cocina equipada", "Lavadora", "Aire acondicionado"],
+    "amenities": [
+      "WiFi",
+      "Smart TV",
+      "Cocina equipada",
+      "Lavadora",
+      "Aire acondicionado"
+    ],
     "host": {
-      "name": "Lucía Méndez",
+      "name": "María González",
       "verified": true,
-      "avatar": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=80&h=80&fit=crop"
+      "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop"
+    }
+  },
+  {
+    "id": "4",
+    "title": "Casa con piscina en Palermo",
+    "location": "Palermo, Buenos Aires",
+    "city": "Buenos Aires",
+    "country": "Argentina",
+    "ownerId": "owner-1",
+    "price": 1800,
+    "currency": "MXN",
+    "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop",
+    "gallery": [
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop"
+    ],
+    "rating": 4.6,
+    "reviewCount": 42,
+    "status": "active",
+    "type": "casa",
+    "maxGuests": 5,
+    "bedrooms": 3,
+    "bathrooms": 2,
+    "description": [
+      "Casa cómoda para familias o grupos, con patio, piscina y muy buena conexión con bares y parques.",
+      "Una opción equilibrada para turismo, descanso o trabajo remoto."
+    ],
+    "amenities": [
+      "WiFi",
+      "Pileta",
+      "Cocina equipada",
+      "Aire acondicionado",
+      "Cochera"
+    ],
+    "host": {
+      "name": "María González",
+      "verified": true,
+      "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop"
+    }
+  },
+  {
+    "id": "5",
+    "title": "Estudio frente al mar",
+    "location": "Mar del Plata, Buenos Aires",
+    "city": "Mar del Plata",
+    "country": "Argentina",
+    "ownerId": "owner-1",
+    "price": 1600,
+    "currency": "MXN",
+    "image": "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=800&h=600&fit=crop",
+    "gallery": [
+      "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=800&h=600&fit=crop",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=600&fit=crop"
+    ],
+    "rating": 4.5,
+    "reviewCount": 31,
+    "status": "paused",
+    "type": "estudio",
+    "maxGuests": 2,
+    "bedrooms": 1,
+    "bathrooms": 1,
+    "description": [
+      "Estudio luminoso frente al mar, ideal para escapadas cortas y viajes de pareja.",
+      "Actualmente pausado para mostrar el estado en el panel del anfitrión."
+    ],
+    "amenities": [
+      "WiFi",
+      "Cocina equipada",
+      "Aire acondicionado"
+    ],
+    "host": {
+      "name": "María González",
+      "verified": true,
+      "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop"
     }
   }
 ]

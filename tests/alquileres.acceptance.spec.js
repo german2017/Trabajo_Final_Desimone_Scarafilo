@@ -91,6 +91,12 @@ test.describe('Navegacion principal', () => {
   });
 
   test('muestra recomendaciones IA ordenadas y guarda la ultima busqueda', async ({ page }) => {
+    let apiCalls = 0;
+    await page.route('http://localhost:4000/api/**', async (route) => {
+      apiCalls += 1;
+      await route.abort();
+    });
+
     await page.goto('/assistant.html');
     await expect(page.locator('#recommendationForm')).toBeVisible();
     await expect(page.locator('#recommendationForm')).toHaveAttribute('data-loaded', 'true');
@@ -118,6 +124,13 @@ test.describe('Navegacion principal', () => {
     const savedRecommendation = await page.evaluate(() => JSON.parse(localStorage.getItem('rentia_last_recommendation')));
     expect(savedRecommendation.preferences.zone).toBe('Polanco');
     expect(savedRecommendation.recommendations).toHaveLength(3);
+    expect(apiCalls).toBe(0);
+
+    await cards.first().getByRole('link', { name: 'Ver detalle' }).click();
+    await expect(page).toHaveURL(/property-detail\.html\?id=/);
+    await expect(page.locator('#property-title')).toBeVisible();
+    await expect(page.locator('#reserve-btn')).toHaveAttribute('href', /booking\.html\?/);
+    expect(apiCalls).toBe(0);
   });
 });
 
@@ -232,5 +245,155 @@ test.describe('Flujo de reserva y dashboards', () => {
     await expect(page).toHaveURL(/tenant-dashboard\.html/);
     await expect(page.locator('.reservations-list')).toBeVisible();
     await expect(page.locator('#tenant-bookings-count')).toContainText(/\(\d+\)/);
+  });
+
+  test('gestiona estados de reserva con localStorage sin base de datos', async ({ page }) => {
+    await page.evaluate(() => {
+      localStorage.setItem('alquileres_user', JSON.stringify({
+        id: 'tenant-1',
+        name: 'Juan Perez',
+        email: 'juan.perez@example.com',
+        role: 'tenant'
+      }));
+      localStorage.setItem('rentia_bookings', JSON.stringify([
+        {
+          id: 'local-cancel',
+          propertyId: '1',
+          tenantId: 'tenant-1',
+          ownerId: 'owner-1',
+          title: 'Apartamento moderno en Polanco',
+          location: 'Polanco, Ciudad de Mexico',
+          host: 'Maria Gonzalez',
+          checkin: '2026-06-01',
+          checkout: '2026-06-05',
+          guests: 2,
+          nights: 4,
+          total: 10000,
+          status: 'Pendiente'
+        },
+        {
+          id: 'local-reject',
+          propertyId: '1',
+          tenantId: 'tenant-1',
+          ownerId: 'owner-1',
+          title: 'Apartamento moderno en Polanco',
+          checkin: '2026-06-10',
+          checkout: '2026-06-12',
+          status: 'Pendiente'
+        },
+        {
+          id: 'local-finish',
+          propertyId: '1',
+          tenantId: 'tenant-1',
+          ownerId: 'owner-1',
+          title: 'Apartamento moderno en Polanco',
+          checkin: '2026-06-15',
+          checkout: '2026-06-17',
+          status: 'Confirmada'
+        }
+      ]));
+    });
+
+    await page.goto('/tenant-dashboard.html');
+    const tenantCard = page.locator('.reservation-card[data-booking-id="local-cancel"]');
+    await expect(tenantCard).toContainText('Pendiente');
+    await tenantCard.getByRole('button', { name: 'Cancelar reserva' }).click();
+    await expect(tenantCard).toContainText('Cancelada');
+    await expect(tenantCard.getByRole('button', { name: 'Cancelar reserva' })).toHaveCount(0);
+
+    await page.evaluate(() => {
+      localStorage.setItem('alquileres_user', JSON.stringify({
+        id: 'owner-1',
+        name: 'Maria Gonzalez',
+        email: 'maria.gonzalez@example.com',
+        role: 'owner'
+      }));
+    });
+    await page.goto('/owner-dashboard.html');
+
+    const rejectedCard = page.locator('.received-item[data-booking-id="local-reject"]');
+    await rejectedCard.getByRole('button', { name: 'Rechazar' }).click();
+    await expect(rejectedCard.locator('.received-status')).toContainText('Rechazada');
+    await expect(rejectedCard.getByRole('button', { name: 'Confirmar' })).toHaveCount(0);
+
+    const finishedCard = page.locator('.received-item[data-booking-id="local-finish"]');
+    await finishedCard.getByRole('button', { name: 'Finalizar' }).click();
+    await expect(finishedCard.locator('.received-status')).toContainText('Finalizada');
+    await expect(finishedCard.getByRole('button', { name: 'Finalizar' })).toHaveCount(0);
+  });
+
+  test('permite crear, pausar, editar y eliminar propiedades del owner en localStorage', async ({ page }) => {
+    const title = `Casa Test Local ${Date.now()}`;
+    const editedTitle = `${title} Editada`;
+
+    await page.evaluate(() => {
+      localStorage.setItem('alquileres_user', JSON.stringify({
+        id: 'owner-1',
+        name: 'Maria Gonzalez',
+        email: 'maria.gonzalez@example.com',
+        role: 'owner'
+      }));
+      localStorage.removeItem('rentia_properties');
+    });
+
+    await page.goto('/create-property.html');
+    await page.locator('#propertyTitle').fill(title);
+    await page.locator('#propertyLocation').fill('Palermo, Buenos Aires');
+    await page.locator('#propertyType').selectOption('casa');
+    await page.locator('#propertyCity').fill('Buenos Aires');
+    await page.locator('#propertyCountry').fill('Argentina');
+    await page.locator('#propertyDescription').fill('Casa amplia para pruebas funcionales del panel anfitrion.');
+    await page.locator('#propertyPrice').fill('1800');
+    await page.locator('#propertyGuests').fill('5');
+    await page.locator('#propertyBedrooms').fill('3');
+    await page.locator('#propertyBathrooms').fill('2');
+    await page.locator('input[name="amenities"][value="WiFi"]').check();
+    await page.locator('input[name="amenities"][value="Cocina equipada"]').check();
+    await page.locator('#propertyImage').fill('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop');
+    await page.locator('#createPropertySubmit').click();
+    await expect(page).toHaveURL(/owner-dashboard\.html/);
+
+    await page.goto(`/search.html?destination=${encodeURIComponent('Palermo')}`);
+    await expect(page.locator('.property-card').filter({ hasText: title })).toBeVisible();
+
+    await page.goto('/assistant.html');
+    await page.locator('#recommendationBudget').fill('2500');
+    await page.locator('#recommendationGuests').fill('4');
+    await page.locator('#recommendationZone').fill('Palermo');
+    await page.locator('#recommendationType').selectOption('casa');
+    await page.locator('#recommendationReason').selectOption('familia');
+    await page.locator('input[name="recommendationServices"][value="wifi"]').check();
+    await page.locator('#recommendationForm button[type="submit"]').click();
+    await expect(page.locator('.recommendation-result-card').filter({ hasText: title })).toBeVisible();
+
+    await page.goto('/owner-dashboard.html');
+    const listing = page.locator('.listing-card').filter({ hasText: title });
+    await listing.getByRole('button', { name: 'Pausar' }).click();
+    await expect(listing).toContainText('Pausada');
+
+    await page.goto(`/search.html?destination=${encodeURIComponent('Palermo')}`);
+    await expect(page.locator('.property-card').filter({ hasText: title })).toHaveCount(0);
+
+    await page.goto('/owner-dashboard.html');
+    await page.locator('.listing-card').filter({ hasText: title }).getByRole('link', { name: 'Editar' }).click();
+    await page.locator('#propertyTitle').fill(editedTitle);
+    await page.locator('#propertyPrice').fill('2100');
+    await page.locator('#propertyGuests').fill('6');
+    await page.locator('#propertyStatus').selectOption('active');
+    await page.locator('#createPropertySubmit').click();
+    await expect(page).toHaveURL(/owner-dashboard\.html/);
+
+    await page.goto(`/search.html?destination=${encodeURIComponent('Palermo')}`);
+    const editedCard = page.locator('.property-card').filter({ hasText: editedTitle });
+    await expect(editedCard).toBeVisible();
+    await expect(editedCard).toContainText('2100');
+
+    await page.goto('/owner-dashboard.html');
+    page.once('dialog', async (dialog) => {
+      expect(dialog.message()).toContain('eliminar');
+      await dialog.accept();
+    });
+    await page.locator('.listing-card').filter({ hasText: editedTitle }).getByRole('button', { name: 'Eliminar' }).click();
+    await expect(page.locator('.listing-card').filter({ hasText: editedTitle })).toHaveCount(0);
   });
 });
